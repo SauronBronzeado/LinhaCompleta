@@ -1,0 +1,22 @@
+﻿TYPE "St_Warehouse"
+VERSION : 0.1
+   STRUCT
+      xPedidoRetirada : Bool;
+      xFimMovimento : Bool;
+      xPosiçaoLivre : Bool;
+      iPosição : Int;
+      xSensorEntrada : Bool;
+      xSensorSaida : Bool;
+      iMachineState_Entrada : Int;
+      iMachineState_Retirada : Int;
+      xForksLeft : Bool;
+      xForksRight : Bool;
+      xLift : Bool;
+      q_dTargetPosition : DInt;
+      Armazem : Array[1..54] of Bool;
+      iStateRetirada : String;
+      iStateEntrada : String;
+   END_STRUCT;
+
+END_TYPE
+

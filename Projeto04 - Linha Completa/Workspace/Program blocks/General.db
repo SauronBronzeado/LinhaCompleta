@@ -1,0 +1,56 @@
+﻿DATA_BLOCK "General"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+   VAR 
+      Panel01 : "St_ControlPanel";
+      "Conveyor 101" : "St_Conveyor";
+      "Conveyor 120" : "St_Conveyor";
+      "Conveyor 121" : "St_Conveyor";
+      "Conveyor 122" : "St_Conveyor";
+      "Conveyor 124" : "St_Conveyor";
+      "Conveyor 125" : "St_Conveyor";
+      "Conveyor 130" : "St_Conveyor";
+      "Conveyor 131" : "St_Conveyor";
+      "Conveyor 132" : "St_Conveyor";
+      "Conveyor 134" : "St_Conveyor";
+      "Conveyor 135" : "St_Conveyor";
+      "Conveyor 220" : "St_Conveyor";
+      "Conveyor 221" : "St_Conveyor";
+      "Conveyor 222" : "St_Conveyor";
+      "Conveyor 223" : "St_Conveyor";
+      "Conveyor 224" : "St_Conveyor";
+      "Conveyor 225" : "St_Conveyor";
+      "Conveyor 300" : "St_Conveyor";
+      "Conveyor 301" : "St_Conveyor";
+      "Conveyor 302" : "St_Conveyor";
+      "Assembler Zne03" : "St_Assembler";
+      "Conveyor 420" : "St_Conveyor";
+      "Conveyor 421" : "St_Conveyor";
+      "Conveyor 422" : "St_Conveyor";
+      "Conveyor 423" : "St_Conveyor";
+      "Conveyor 424" : "St_Conveyor";
+      "Conveyor 425" : "St_Conveyor";
+      "Conveyor 500" : "St_Conveyor";
+      "Conveyor 501" : "St_Conveyor";
+      "Conveyor 502" : "St_Conveyor";
+      "Assembler Zne05" : "St_Assembler";
+      "Conveyor 920" : "St_Conveyor";
+      "Conveyor 921" : "St_Conveyor";
+      "Manipulator 1" : "St_Manipulator";
+      "Conveyor 930" : "St_Conveyor";
+      "Conveyor 931" : "St_Conveyor";
+      "Manipulator 0" : "St_Manipulator";
+      Transfer : "St_Transfer";
+      "Conveyor 950" : "St_Conveyor";
+      "Conveyor 951" : "St_Conveyor";
+      Warehouse : "St_Warehouse";
+      "Conveyor 952" : "St_Conveyor";
+      "Conveyor 953" : "St_Conveyor";
+   END_VAR
+
+
+BEGIN
+
+END_DATA_BLOCK
+

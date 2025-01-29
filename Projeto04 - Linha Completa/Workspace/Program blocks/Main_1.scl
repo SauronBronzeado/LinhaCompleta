@@ -1,0 +1,31 @@
+﻿ORGANIZATION_BLOCK "Main_1"
+TITLE = "Main Program Sweep (Cycle)"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+
+BEGIN
+	
+	
+	"MHJ-PLC-Lab-Function-S71200"();
+	
+	"ControlPanel_DB"(i_xButtonReset:="Reset Button 0",
+	                  i_xButtonStart:="Start Button 0",
+	                  i_xButtonStop:="Stop Button 0",
+	                  i_xButtonEmergency:="Emergency Stop 0",
+	                  i_xSelectorMode:="Auto Selector 0",
+	                  i_xClock:="Clock_1Hz",
+	                  q_xStartLight=>"Start Button 0 (Light)",
+	                  q_xStopLight=>"Stop Button 0 (Light)",
+	                  q_xResetLight=>"Reset Button 0 (Light)",
+	                  ControlPanel:="General".Panel01);
+	
+	"Zne01_DB"(); 
+	"Zne02_DB"();
+	"Zne03_DB"();
+	"Zne04_DB"();
+	"Zne05_DB"();
+	"Receita"();
+	"Zne09_DB"();
+	
+END_ORGANIZATION_BLOCK
+

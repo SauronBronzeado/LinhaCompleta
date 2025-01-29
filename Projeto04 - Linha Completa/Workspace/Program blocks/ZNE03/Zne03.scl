@@ -1,0 +1,69 @@
+﻿FUNCTION_BLOCK "Zne03"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      "Conveyor 300" : "Conveyor";
+      "Conveyor 301" : "Conveyor";
+      "Conveyor 302" : "Conveyor";
+      "Pusher Zne03" : "Pusher";
+      "Assembler Zne03" : "Assembler";
+   END_VAR
+
+
+BEGIN
+	
+	REGION "Conveyor 300"
+	    #"Conveyor 300".i_xInterlock := (NOT "General"."Assembler Zne03".ReadyToReceiveBase) AND "Sensor 300";
+	    #"Conveyor 300"(i_xRun:=TRUE,
+	                    ControlPanel:="General".Panel01,
+	                    q_xMotorOn=>"Zne03 Conveyor 300",
+	                    Conveyor:="General"."Conveyor 300");
+	END_REGION
+	
+	REGION "Conveyor 301"
+	    #"Conveyor 301".i_xInterlock := FALSE;
+	    #"Conveyor 301"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne03 Conveyor 301",
+	                    Conveyor := "General"."Conveyor 301");
+	END_REGION
+	
+	REGION "Conveyor 302"
+	    #"Conveyor 302".i_xInterlock := FALSE;
+	    #"Conveyor 302"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne03 Conveyor 302",
+	                    Conveyor := "General"."Conveyor 302");
+	END_REGION
+	
+	REGION "Pusher Zne03"
+	    #"Pusher Zne03".RequestPusher := ("Vision Sensor 1 (Value)" <> "GreenBaseMaterial") AND ("Vision Sensor 1 (Value)" <> 0);
+	    #"Pusher Zne03"(Timer := T#500ms,
+	                    ControlPanel := "General".Panel01,
+	                    Pusher => "Zne03 Pusher");
+	END_REGION
+	
+	REGION "Assembler"     
+	    "General"."Assembler Zne03".EnableSend := #"Conveyor 302".q_xMotorOn AND NOT "Sensor 302";
+	    #"Assembler Zne03"(LidClampClosed:="Zne02 Clamp Closed",
+	                       LidClampLimit:="Zne02 Clamp Limit",
+	                       BaseClampClosed:="Zne03 Clamp Closed",
+	                       BaseClampLimit:="Zne03 Clamp Limit",
+	                       PresenceLidConveyor:="Sensor 225",
+	                       PresenceBaseConveyor:="Sensor 301",
+	                       PresenceGrab:="Zne03 (Detected)",
+	                       MovingX:="Zne03 (Moving X)",
+	                       MovingZ:="Zne03 (Moving Z)",
+	                       ControlPanel:="General".Panel01,
+	                       LidClampClose=>"Zne02 Clamp",
+	                       LidClampRise=>"Zne02 Clamp Rise",
+	                       BaseClampClose=>"Zne03 Clamp",
+	                       BaseClampRise=>"Zne03 Clamp Raise",
+	                       AxisX=>"Zne03 X",
+	                       AxisZ=>"Zne03 Z",
+	                       Grab=>"Zne03 (Grab)",
+	                       "St_ Assembler":="General"."Assembler Zne03");
+	END_REGION
+	
+END_FUNCTION_BLOCK
+

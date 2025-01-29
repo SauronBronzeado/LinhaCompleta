@@ -1,0 +1,81 @@
+﻿FUNCTION "Receita" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+
+BEGIN
+	REGION "Manipulator" 1       
+	    // HOME
+	    "General"."Manipulator 1".Coordinates[0]."Axis X" := 11664;
+	    "General"."Manipulator 1".Coordinates[0]."Axis Y" := 10368;
+	    "General"."Manipulator 1".Coordinates[0]."Axis Z" := 1000;
+	    
+	    // PREPICK
+	    "General"."Manipulator 1".Coordinates[1]."Axis X" := 19872;
+	    "General"."Manipulator 1".Coordinates[1]."Axis Y" := 14688;
+	    "General"."Manipulator 1".Coordinates[1]."Axis Z" := 1000;
+	    
+	    // PICK
+	    "General"."Manipulator 1".Coordinates[2]."Axis X" := 19872;
+	    "General"."Manipulator 1".Coordinates[2]."Axis Y" := 14688;
+	    "General"."Manipulator 1".Coordinates[2]."Axis Z" := 21607;
+	    
+	    // POSPICK
+	    "General"."Manipulator 1".Coordinates[3]."Axis X" := 19872;
+	    "General"."Manipulator 1".Coordinates[3]."Axis Y" := 14688;
+	    "General"."Manipulator 1".Coordinates[3]."Axis Z" := 10000;
+	    
+	    // PREDROP
+	    "General"."Manipulator 1".Coordinates[4]."Axis X" := 6912;
+	    "General"."Manipulator 1".Coordinates[4]."Axis Y" := 14688;
+	    "General"."Manipulator 1".Coordinates[4]."Axis Z" := 10000;
+	    
+	    // DROP
+	    "General"."Manipulator 1".Coordinates[5]."Axis X" := 6912;
+	    "General"."Manipulator 1".Coordinates[5]."Axis Y" := 14688;
+	    "General"."Manipulator 1".Coordinates[5]."Axis Z" := 27648 - ("General"."Manipulator 1".ContActual * 2000);
+	    
+	    // POSDROP
+	    "General"."Manipulator 1".Coordinates[6]."Axis X" := 6912;
+	    "General"."Manipulator 1".Coordinates[6]."Axis Y" := 14688;
+	    "General"."Manipulator 1".Coordinates[6]."Axis Z" := 15124;
+	END_REGION
+	
+	REGION "Manipulator" 0       
+	    // HOME
+	    "General"."Manipulator 0".Coordinates[0]."Axis X" := 11664;
+	    "General"."Manipulator 0".Coordinates[0]."Axis Y" := 10368;
+	    "General"."Manipulator 0".Coordinates[0]."Axis Z" := 1000;
+	    
+	    // PREPICK
+	    "General"."Manipulator 0".Coordinates[1]."Axis X" := 19872;
+	    "General"."Manipulator 0".Coordinates[1]."Axis Y" := 14688;
+	    "General"."Manipulator 0".Coordinates[1]."Axis Z" := 1000;
+	    
+	    // PICK
+	    "General"."Manipulator 0".Coordinates[2]."Axis X" := 19872;
+	    "General"."Manipulator 0".Coordinates[2]."Axis Y" := 14688;
+	    "General"."Manipulator 0".Coordinates[2]."Axis Z" := 21607;
+	    
+	    // POSPICK
+	    "General"."Manipulator 0".Coordinates[3]."Axis X" := 19872;
+	    "General"."Manipulator 0".Coordinates[3]."Axis Y" := 14688;
+	    "General"."Manipulator 0".Coordinates[3]."Axis Z" := 10000;
+	    
+	    // PREDROP
+	    "General"."Manipulator 0".Coordinates[4]."Axis X" := 6912;
+	    "General"."Manipulator 0".Coordinates[4]."Axis Y" := 14688;
+	    "General"."Manipulator 0".Coordinates[4]."Axis Z" := 10000;
+	    
+	    // DROP
+	    "General"."Manipulator 0".Coordinates[5]."Axis X" := 6912;
+	    "General"."Manipulator 0".Coordinates[5]."Axis Y" := 14688;
+	    "General"."Manipulator 0".Coordinates[5]."Axis Z" := 27648 - ("General"."Manipulator 0".ContActual * 2000);
+	    
+	    // POSDROP
+	    "General"."Manipulator 0".Coordinates[6]."Axis X" := 6912;
+	    "General"."Manipulator 0".Coordinates[6]."Axis Y" := 14688;
+	    "General"."Manipulator 0".Coordinates[6]."Axis Z" := 15124;
+	END_REGION
+	
+END_FUNCTION
+

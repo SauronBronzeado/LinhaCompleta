@@ -1,0 +1,98 @@
+﻿FUNCTION "PosDisponivel" : DInt
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      Armazem : Array[1..54] of Bool;
+   END_VAR
+
+   VAR_TEMP 
+      i : Int;
+      j : Int;
+      "Array" : Array[1..54] of Int;
+   END_VAR
+
+   VAR CONSTANT 
+      Inicio : Int := 1;
+      Fim : Int := 54;
+   END_VAR
+
+
+BEGIN
+	//INICIALIZA VARIAVEL
+	#PosDisponivel := -1;
+	
+	//PRIORIDADE ABASTECIMENTO
+	#Array[1] := 1;
+	#Array[2] := 10;
+	#Array[3] := 19;
+	#Array[4] := 28;
+	#Array[5] := 37;
+	#Array[6] := 46;
+	
+	#Array[7] := 2;
+	#Array[8] := 11;
+	#Array[9] := 20;
+	#Array[10] := 29;
+	#Array[11] := 38;
+	#Array[12] := 47;
+	
+	#Array[13] := 3;
+	#Array[14] := 12;
+	#Array[15] := 21;
+	#Array[16] := 30;
+	#Array[17] := 39;
+	#Array[18] := 48;
+	
+	#Array[19] := 4;
+	#Array[20] := 13;
+	#Array[21] := 22;
+	#Array[22] := 31;
+	#Array[23] := 40;
+	#Array[24] := 49;
+	
+	#Array[25] := 5;
+	#Array[26] := 14;
+	#Array[27] := 23;
+	#Array[28] := 32;
+	#Array[29] := 41;
+	#Array[30] := 50;
+	
+	#Array[31] := 6;
+	#Array[32] := 15;
+	#Array[33] := 24;
+	#Array[34] := 33;
+	#Array[35] := 42;
+	#Array[36] := 51;
+	
+	#Array[37] := 7;
+	#Array[38] := 16;
+	#Array[39] := 25;
+	#Array[40] := 34;
+	#Array[41] := 43;
+	#Array[42] := 52;
+	
+	#Array[43] := 8;
+	#Array[44] := 17;
+	#Array[45] := 26;
+	#Array[46] := 35;
+	#Array[47] := 44;
+	#Array[48] := 53;
+	
+	#Array[49] := 9;
+	#Array[50] := 18;
+	#Array[51] := 27;
+	#Array[52] := 36;
+	#Array[53] := 45;
+	#Array[54] := 54;
+	
+	//PROCURA POSICAO LIVRE
+	FOR #i := #Inicio TO #Fim DO
+	    #j := #Array[#i];
+	    IF NOT #Armazem[#j] THEN
+	        #PosDisponivel := INT_TO_DINT(#j);
+	        EXIT;
+	    END_IF;
+	END_FOR;
+	
+END_FUNCTION
+

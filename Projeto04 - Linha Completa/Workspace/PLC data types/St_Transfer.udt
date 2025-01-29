@@ -1,0 +1,19 @@
+﻿TYPE "St_Transfer"
+VERSION : 0.1
+   STRUCT
+      EnableSend : Bool;
+      RequestRight : Bool;
+      RequestLeft : Bool;
+      ReadyToReceiveRight : Bool;
+      ReadyToReceiveLeft : Bool;
+      LastReceiveRightSide : Bool;
+      "Chain Transfer Foward" : Bool;
+      "Chain Transfer Backward" : Bool;
+      "Chain Transfer Right" : Bool;
+      "Chain Transfer Left" : Bool;
+      iMachineState { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Int;
+      iState : String;
+   END_STRUCT;
+
+END_TYPE
+

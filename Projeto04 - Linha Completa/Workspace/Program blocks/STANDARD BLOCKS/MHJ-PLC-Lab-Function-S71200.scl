@@ -1,0 +1,72 @@
+﻿FUNCTION "MHJ-PLC-Lab-Function-S71200" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_TEMP 
+      rdTimeReturn : Int;
+      outputTime {InstructionName := 'DTL'; LibVersion := '1.0'} : DTL;
+      SyncVal : Byte;
+      forVal : Int;
+      forVal_2 : Int;
+      Value : Byte;
+   END_VAR
+
+   VAR CONSTANT 
+      CompVal : Byte := 16#34;
+      Value_01 : Byte := 16#11;
+      Value_01_DW : DWord := 16#A165_D992;
+      Value_02_DW : DWord := 16#58BE_4401;
+   END_VAR
+
+
+BEGIN
+	
+	#Value:=PEEK(area := 16#82,
+	     dbNumber := 0,
+	     byteOffset := 511);
+	#Value := #Value + 1;
+	
+	POKE(area := 16#82,
+	     dbNumber := 0,
+	     byteOffset := 511,
+	     value := #Value);
+	
+	POKE(area:=16#81,
+	     dbNumber:=0,
+	     byteOffset:=1016,
+	     value:=#Value_01_DW);
+	POKE(area := 16#81,
+	     dbNumber := 0,
+	     byteOffset := 1020,
+	     value := #Value_02_DW);
+	
+	POKE(area := 16#81,
+	     dbNumber := 0,
+	     byteOffset := 511,
+	     value := B#16#00);
+	
+	FOR #forVal := 0 TO 120 DO
+	    FOR #forVal_2:=0 TO 10 DO
+	        #rdTimeReturn:=RD_SYS_T(#outputTime);
+	        #rdTimeReturn := WR_SYS_T(#outputTime);
+	        #rdTimeReturn := RD_SYS_T(#outputTime);
+	        #rdTimeReturn := WR_SYS_T(#outputTime);
+	    END_FOR;
+	    #SyncVal:= PEEK(area := 16#81,
+	                   dbNumber := 0,
+	                   byteOffset := 511);
+	    IF #SyncVal = #CompVal THEN
+	       GOTO M_1;
+	    END_IF;
+	END_FOR;
+	RETURN;
+	
+	M_1:
+	POKE(area := 16#81,
+	     dbNumber := 0,
+	     byteOffset := 511,
+	     value := B#16#0);
+	
+	
+	    
+END_FUNCTION
+

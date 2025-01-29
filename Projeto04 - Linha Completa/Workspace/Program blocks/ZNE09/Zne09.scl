@@ -1,0 +1,153 @@
+﻿FUNCTION_BLOCK "Zne09"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      "Conveyor 920" : "Conveyor";
+      "Conveyor 921" : "Conveyor";
+      "Manipulator 1" : "Manipulator";
+      "Conveyor 930" : "Conveyor";
+      "Conveyor 931" : "Conveyor";
+      "Manipulator 0" : "Manipulator";
+      "Transfer Zne09" : "Transfer";
+      "Conveyor 950" : "Conveyor";
+      "Conveyor 951" : "Conveyor";
+      Warehouse : "Warehouse";
+      "Conveyor 952" : "Conveyor";
+      "Conveyor 953" : "Conveyor";
+      "tConveyor950 Interlock" {InstructionName := 'TOF_TIME'; LibVersion := '1.0'} : TOF_TIME;
+   END_VAR
+
+
+BEGIN
+	
+	
+	REGION "Conveyor 920"    
+	    #"Conveyor 920"(i_xRun := "General"."Manipulator 1".ReadyToReceivePallet OR "General"."Manipulator 1".PalletFull,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 920",
+	                    Conveyor := "General"."Conveyor 920");
+	END_REGION
+	
+	REGION "Manipulator 1"
+	    "General"."Manipulator 1".ContMax := 3;
+	    #"Manipulator 1"("Pallet Detected":="Sensor 920",
+	                     "Part Detected":="Sensor 302",
+	                     PresenceGrab:="Pick & Place 1 (Box Detected)",
+	                     "Actual Position X":="Pick & Place 1 X Position (V)",
+	                     "Actual Position Y":="Pick & Place 1 Y Position (V)",
+	                     "Actual Position Z":="Pick & Place 1 Z Position (V)",
+	                     ControlPanel:="General".Panel01,
+	                     "X Setpoint"=>"Pick & Place 1 X Set Point (V)",
+	                     "Y Setpoint"=>"Pick & Place 1 Y Set Point(V)",
+	                     "Z Setpoint"=>"Pick & Place 1 Z Set Point (V)",
+	                     Grab=>"Pick & Place 1 (Grab)",
+	                     Manipulator:="General"."Manipulator 1");
+	END_REGION
+	
+	REGION "Conveyor 921"
+	    #"Conveyor 921".i_xInterlock := "Sensor 921" AND NOT "General".Transfer.ReadyToReceiveRight;
+	    #"Conveyor 921"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 921",
+	                    Conveyor := "General"."Conveyor 921");
+	END_REGION
+	
+	REGION "Conveyor 930"    
+	    #"Conveyor 930"(i_xRun := "General"."Manipulator 0".ReadyToReceivePallet OR "General"."Manipulator 0".PalletFull,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 930",
+	                    Conveyor := "General"."Conveyor 930");
+	END_REGION
+	
+	REGION "Manipulator 0"
+	    "General"."Manipulator 0".ContMax := 3;
+	    #"Manipulator 0"("Pallet Detected" := "Sensor 930",
+	                     "Part Detected" := "Sensor 502",
+	                     PresenceGrab := "Pick & Place 0 (Box Detected)",
+	                     "Actual Position X" := "Pick & Place 0 X Position (V)",
+	                     "Actual Position Y" := "Pick & Place 0 Y Position (V)",
+	                     "Actual Position Z" := "Pick & Place 0 Z Position (V)",
+	                     ControlPanel := "General".Panel01,
+	                     "X Setpoint" => "Pick & Place 0 X Set Point (V)",
+	                     "Y Setpoint" => "Pick & Place 0 Y Set Point(V)",
+	                     "Z Setpoint" => "Pick & Place 0 Z Set Point (V)",
+	                     Grab => "Pick & Place 0 (Grab)",
+	                     Manipulator := "General"."Manipulator 0");
+	END_REGION
+	
+	REGION "Conveyor 931"
+	    #"Conveyor 931".i_xInterlock := "Sensor 931" AND NOT "General".Transfer.ReadyToReceiveLeft;
+	    #"Conveyor 931"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 931",
+	                    Conveyor := "General"."Conveyor 931");
+	END_REGION
+	
+	REGION #"Transfer Zne09"
+	    "General".Transfer.EnableSend := "Sensor 950";
+	    "General".Transfer.RequestRight := "Sensor 921";
+	    "General".Transfer.RequestLeft := "Sensor 931";
+	    
+	    #"Transfer Zne09"(RightStop:="Sensor 922",
+	                      LeftStop:="Sensor 932",
+	                      ControlPanel:="General".Panel01,
+	                      "Chain Transfer Foward" =>"Zne09 Chain Transfer Foward",
+	                      "Chain Transfer Backward" =>"Zne09 Chain Transfer Backward",
+	                      "Chain Transfer Left" =>"Zne09 Chain Transfer Left",
+	                      "Chain Transfer Right" => "Zne09 Chain Transfer Right",
+	                      "Transfer":="General".Transfer);
+	END_REGION
+	
+	REGION "Conveyor 950"    
+	    #"tConveyor950 Interlock"(IN:=NOT "Sensor 950" AND NOT "Sensor 951", PT:=t#2s);
+	    #"Conveyor 950"(i_xInterlock := #"tConveyor950 Interlock".Q,
+	                    i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 950",
+	                    Conveyor := "General"."Conveyor 950");
+	END_REGION
+	
+	REGION "Conveyor 951"
+	    #"Conveyor 951"(i_xInterlock:=NOT "Sensor 951",
+	                    i_xRun:=TRUE,
+	                    ControlPanel:="General".Panel01,
+	                    q_xMotorOn=>"Zne09 Conveyor 951",
+	                    Conveyor:="General"."Conveyor 951");
+	END_REGION
+	
+	REGION Wirehouse    
+	    "General".Warehouse.xSensorEntrada := NOT "Sensor 951";
+	    "General".Warehouse.xSensorSaida := NOT "Sensor 952";
+	    
+	    #Warehouse(i_xAtLeft:="AtLeft",
+	               i_xAtRight:="AtRight",
+	               i_xAtMiddle:="AtCenter",
+	               i_xMovingZ:="MovingZ",
+	               i_xMovingX:="MovingX",
+	               ControlPanel:="General".Panel01,
+	               q_xForksLeft=>"ForksLeft",
+	               q_xForksRight=>"Forks RIght",
+	               q_xLift=>"Lift",
+	               q_dTargetPosition=> "Zne09 Stacker Target Position",
+	               Warehouse:="General".Warehouse);
+	END_REGION
+	
+	REGION #"Conveyor 952"
+	    #"Conveyor 952"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 952",
+	                    Conveyor := "General"."Conveyor 952");
+	END_REGION
+	
+	REGION #"Conveyor 953"
+	    #"Conveyor 953"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne09 Conveyor 953",
+	                    Conveyor := "General"."Conveyor 953");
+	END_REGION
+	
+	
+	
+	
+END_FUNCTION_BLOCK
+

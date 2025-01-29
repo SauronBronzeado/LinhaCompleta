@@ -1,0 +1,63 @@
+﻿FUNCTION_BLOCK "Conveyor"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      i_xInterlock : Bool;
+      i_xRun : Bool;
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR_OUTPUT 
+      q_xMotorOn : Bool := false;
+   END_VAR
+
+   VAR_IN_OUT 
+      Conveyor : "St_Conveyor";
+   END_VAR
+
+
+BEGIN
+	
+	REGION MODO
+	    CASE #ControlPanel.q_siMode OF
+	        1:  // EMERGENCIA
+	            #q_xMotorOn := FALSE;
+	            
+	        2:  // AUTOMATICO
+	            IF #i_xRun AND NOT #i_xInterlock THEN
+	                #q_xMotorOn := TRUE;
+	            ELSE
+	                #q_xMotorOn := FALSE;
+	            END_IF;
+	            
+	        3:  // MANUAL
+	            #q_xMotorOn := #Conveyor.IHM_xButtonRun;
+	            
+	        ELSE
+	            #q_xMotorOn := FALSE;
+	    END_CASE;
+	END_REGION
+	
+	REGION #IHM
+	    IF #Conveyor.iq_xError THEN
+	        #Conveyor.IHM_xStatusMotor := 1; // ERRO
+	    
+	    ELSIF #ControlPanel.q_xAutoMode AND #q_xMotorOn THEN
+	        #Conveyor.IHM_xStatusMotor := 2; // AUTO RUNNING
+	        
+	    ELSIF #ControlPanel.q_xManualMode AND #q_xMotorOn THEN
+	        #Conveyor.IHM_xStatusMotor := 3; // MANUAL RUNNING
+	        
+	    ELSIF NOT #q_xMotorOn THEN
+	        #Conveyor.IHM_xStatusMotor := 4; // MOTOR STOPED
+	        
+	    END_IF;
+	END_REGION
+	
+	
+	
+	
+	
+	
+END_FUNCTION_BLOCK
+

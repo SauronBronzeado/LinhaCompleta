@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Tagtable name="Linha de Produção">
+  <!-- exported by FACTORY I/O version 2.5.4 -->
+  <Tag type="Bool" addr="%I0.0">Emergency Stop 0</Tag>
+  <Tag type="Bool" addr="%I0.1">Start Button 0</Tag>
+  <Tag type="Bool" addr="%I0.2">Stop Button 0</Tag>
+  <Tag type="Bool" addr="%I0.3">Reset Button 0</Tag>
+  <Tag type="Bool" addr="%I0.4">Auto Selector 0</Tag>
+  <Tag type="Bool" addr="%I0.5">Machining Center 0 (Is Busy)</Tag>
+  <Tag type="Bool" addr="%I0.6">Machining Center 0 (Has Error)</Tag>
+  <Tag type="Bool" addr="%I0.7">Machining Center 1 (Is Busy)</Tag>
+  <Tag type="Bool" addr="%I1.0">Machining Center 1 (Has Error)</Tag>
+  <Tag type="Bool" addr="%I1.1">Sensor 120</Tag>
+  <Tag type="Bool" addr="%I1.2">Sensor 122</Tag>
+  <Tag type="Bool" addr="%I1.3">Machining Center 2 (Is Busy)</Tag>
+  <Tag type="Bool" addr="%I1.4">Machining Center 2 (Has Error)</Tag>
+  <Tag type="Bool" addr="%I1.5">Machining Center 3 (Is Busy)</Tag>
+  <Tag type="Bool" addr="%I1.6">Machining Center 3 (Has Error)</Tag>
+  <Tag type="Bool" addr="%I1.7">Sensor 130</Tag>
+  <Tag type="Bool" addr="%I2.0">Sensor 132</Tag>
+  <Tag type="Bool" addr="%I2.1">Sensor 223</Tag>
+  <Tag type="Bool" addr="%I2.2">Sensor 225</Tag>
+  <Tag type="Bool" addr="%I2.3">Zne02 Clamp Closed</Tag>
+  <Tag type="Bool" addr="%I2.4">Zne02 Clamp Limit</Tag>
+  <Tag type="Bool" addr="%I2.5">Sensor 300</Tag>
+  <Tag type="Bool" addr="%I2.6">Sensor 301</Tag>
+  <Tag type="Bool" addr="%I2.7">Sensor 302</Tag>
+  <Tag type="Bool" addr="%I3.0">Zne03 (Detected)</Tag>
+  <Tag type="Bool" addr="%I3.1">Zne03 (Moving X)</Tag>
+  <Tag type="Bool" addr="%I3.2">Zne03 (Moving Z)</Tag>
+  <Tag type="Bool" addr="%I3.3">Zne03 Clamp Closed</Tag>
+  <Tag type="Bool" addr="%I3.4">Zne03 Clamp Limit</Tag>
+  <Tag type="Bool" addr="%I3.5">Sensor 423</Tag>
+  <Tag type="Bool" addr="%I3.6">Sensor 425</Tag>
+  <Tag type="Bool" addr="%I3.7">Zne04 Clamp Closed</Tag>
+  <Tag type="Bool" addr="%I4.0">Zne04 Clamp Limit</Tag>
+  <Tag type="Bool" addr="%I4.1">Sensor 500</Tag>
+  <Tag type="Bool" addr="%I4.2">Sensor 501</Tag>
+  <Tag type="Bool" addr="%I4.3">Sensor 502</Tag>
+  <Tag type="Bool" addr="%I4.4">Zne05 (Detected)</Tag>
+  <Tag type="Bool" addr="%I4.5">Zne05 (Moving X)</Tag>
+  <Tag type="Bool" addr="%I4.6">Zne05 (Moving Z)</Tag>
+  <Tag type="Bool" addr="%I4.7">Zne05 Clamp Closed</Tag>
+  <Tag type="Bool" addr="%I5.0">Zne05 Clamp Limit</Tag>
+  <Tag type="Bool" addr="%I10.0">Sensor 920</Tag>
+  <Tag type="Bool" addr="%I10.1">Sensor 921</Tag>
+  <Tag type="Bool" addr="%I10.2">Sensor 922</Tag>
+  <Tag type="Bool" addr="%I10.3">Sensor 930</Tag>
+  <Tag type="Bool" addr="%I10.4">Sensor 931</Tag>
+  <Tag type="Bool" addr="%I10.5">Sensor 932</Tag>
+  <Tag type="Bool" addr="%I10.6">Sensor 950</Tag>
+  <Tag type="Bool" addr="%I10.7">Sensor 951</Tag>
+  <Tag type="Bool" addr="%I11.0">Sensor 952</Tag>
+  <Tag type="Bool" addr="%I11.1">Sensor 953</Tag>
+  <Tag type="Bool" addr="%I11.2">Pick &amp; Place 1 (Box Detected)</Tag>
+  <Tag type="Bool" addr="%I11.3">Pick &amp; Place 0 (Box Detected)</Tag>
+  <Tag type="Bool" addr="%I12.0">AtRight</Tag>
+  <Tag type="Bool" addr="%I12.1">AtLeft</Tag>
+  <Tag type="Bool" addr="%I12.2">AtCenter</Tag>
+  <Tag type="Bool" addr="%I12.3">MovingX</Tag>
+  <Tag type="Bool" addr="%I12.4">MovingZ</Tag>
+  <Tag type="Bool" addr="%Q0.0">Zne01 Conveyor 101</Tag>
+  <Tag type="Bool" addr="%Q0.1">Zne01 Conveyor 120</Tag>
+  <Tag type="Bool" addr="%Q0.2">Zne01 Conveyor 121</Tag>
+  <Tag type="Bool" addr="%Q0.3">Zne01 Conveyor 122</Tag>
+  <Tag type="Bool" addr="%Q0.4">Zne01 Conveyor 124</Tag>
+  <Tag type="Bool" addr="%Q0.5">Zne01 Conveyor 125</Tag>
+  <Tag type="Bool" addr="%Q0.6">Zne01 Sorter 102 (Up)</Tag>
+  <Tag type="Bool" addr="%Q0.7">Zne01 Sorter 102 (Left)</Tag>
+  <Tag type="Bool" addr="%Q1.0">Zne01 Sorter 102 (Right)</Tag>
+  <Tag type="Bool" addr="%Q1.1">Zne01 Sorter 123 (Up)</Tag>
+  <Tag type="Bool" addr="%Q1.2">Zne01 Sorter 123 (Right)</Tag>
+  <Tag type="Bool" addr="%Q1.3">Machining Center 0 (Start)</Tag>
+  <Tag type="Bool" addr="%Q1.4">Machining Center 0 (Stop)</Tag>
+  <Tag type="Bool" addr="%Q1.5">Machining Center 0 (Reset)</Tag>
+  <Tag type="Bool" addr="%Q1.6">Machining Center 1 (Start)</Tag>
+  <Tag type="Bool" addr="%Q1.7">Machining Center 1 (Stop)</Tag>
+  <Tag type="Bool" addr="%Q2.0">Machining Center 1 (Reset)</Tag>
+  <Tag type="Bool" addr="%Q2.1">Start Button 0 (Light)</Tag>
+  <Tag type="Bool" addr="%Q2.2">Stop Button 0 (Light)</Tag>
+  <Tag type="Bool" addr="%Q2.3">Reset Button 0 (Light)</Tag>
+  <Tag type="Bool" addr="%Q2.4">Zne01 Conveyor 130</Tag>
+  <Tag type="Bool" addr="%Q2.5">Zne01 Conveyor 131</Tag>
+  <Tag type="Bool" addr="%Q2.6">Zne01 Conveyor 132</Tag>
+  <Tag type="Bool" addr="%Q2.7">Zne01 Conveyor 134</Tag>
+  <Tag type="Bool" addr="%Q3.0">Zne01 Conveyor 135</Tag>
+  <Tag type="Bool" addr="%Q3.1">Zne01 Sorter 133 (Up)</Tag>
+  <Tag type="Bool" addr="%Q3.2">Zne01 Sorter 133 (Left)</Tag>
+  <Tag type="Bool" addr="%Q3.3">Machining Center 2 (Start)</Tag>
+  <Tag type="Bool" addr="%Q3.4">Machining Center 2 (Stop)</Tag>
+  <Tag type="Bool" addr="%Q3.5">Machining Center 2 (Reset)</Tag>
+  <Tag type="Bool" addr="%Q3.6">Machining Center 3 (Start)</Tag>
+  <Tag type="Bool" addr="%Q3.7">Machining Center 3 (Stop)</Tag>
+  <Tag type="Bool" addr="%Q4.0">Machining Center 3 (Reset)</Tag>
+  <Tag type="Bool" addr="%Q4.1">Zne02 Conveyor 220</Tag>
+  <Tag type="Bool" addr="%Q4.2">Zne02 Conveyor 221</Tag>
+  <Tag type="Bool" addr="%Q4.3">Zne02 Conveyor 222A</Tag>
+  <Tag type="Bool" addr="%Q4.4">Zne02 Conveyor 222B</Tag>
+  <Tag type="Bool" addr="%Q4.5">Zne02 Conveyor 223</Tag>
+  <Tag type="Bool" addr="%Q4.6">Zne02 Conveyor 224</Tag>
+  <Tag type="Bool" addr="%Q4.7">Zne02 Conveyor 225</Tag>
+  <Tag type="Bool" addr="%Q5.0">Zne02 Pusher</Tag>
+  <Tag type="Bool" addr="%Q5.1">Zne02 Clamp </Tag>
+  <Tag type="Bool" addr="%Q5.2">Zne02 Clamp Rise</Tag>
+  <Tag type="Bool" addr="%Q5.3">Zne03 Conveyor 300</Tag>
+  <Tag type="Bool" addr="%Q5.4">Zne03 Conveyor 301</Tag>
+  <Tag type="Bool" addr="%Q5.5">Zne03 Conveyor 302</Tag>
+  <Tag type="Bool" addr="%Q5.6">Zne03 Clamp</Tag>
+  <Tag type="Bool" addr="%Q5.7">Zne03 Clamp Raise</Tag>
+  <Tag type="Bool" addr="%Q6.0">Zne03 X</Tag>
+  <Tag type="Bool" addr="%Q6.1">Zne03 Z</Tag>
+  <Tag type="Bool" addr="%Q6.2">Zne03 (Grab)</Tag>
+  <Tag type="Bool" addr="%Q6.3">Zne03 Pusher</Tag>
+  <Tag type="Bool" addr="%Q6.4">Zne04 Conveyor 420</Tag>
+  <Tag type="Bool" addr="%Q6.5">Zne04 Conveyor 421</Tag>
+  <Tag type="Bool" addr="%Q6.6">Zne04 Conveyor 422A</Tag>
+  <Tag type="Bool" addr="%Q6.7">Zne04 Conveyor 422B</Tag>
+  <Tag type="Bool" addr="%Q7.0">Zne04 Conveyor 423</Tag>
+  <Tag type="Bool" addr="%Q7.1">Zne04 Conveyor 424</Tag>
+  <Tag type="Bool" addr="%Q7.2">Zne04 Conveyor 425</Tag>
+  <Tag type="Bool" addr="%Q7.3">Zne04 Pusher </Tag>
+  <Tag type="Bool" addr="%Q7.4">Zne04 Clamp</Tag>
+  <Tag type="Bool" addr="%Q7.5">Zne04 Clamp Raise</Tag>
+  <Tag type="Bool" addr="%Q7.6">Zne05 Conveyor 500</Tag>
+  <Tag type="Bool" addr="%Q7.7">Zne05 Conveyor 501</Tag>
+  <Tag type="Bool" addr="%Q8.0">Zne05 Conveyor 502</Tag>
+  <Tag type="Bool" addr="%Q8.1">Zne05 Clamp</Tag>
+  <Tag type="Bool" addr="%Q8.2">Zne05 Clamp Raise</Tag>
+  <Tag type="Bool" addr="%Q8.3">Zne05 X</Tag>
+  <Tag type="Bool" addr="%Q8.4">Zne05 Z</Tag>
+  <Tag type="Bool" addr="%Q8.5">Zne05 (Grab)</Tag>
+  <Tag type="Bool" addr="%Q8.6">Zne05 Pusher</Tag>
+  <Tag type="Bool" addr="%Q10.0">Zne09 Conveyor 920</Tag>
+  <Tag type="Bool" addr="%Q10.1">Zne09 Conveyor 921</Tag>
+  <Tag type="Bool" addr="%Q10.2">Zne09 Conveyor 930</Tag>
+  <Tag type="Bool" addr="%Q10.3">Zne09 Conveyor 931</Tag>
+  <Tag type="Bool" addr="%Q10.4">Zne09 Conveyor 950</Tag>
+  <Tag type="Bool" addr="%Q10.5">Zne09 Conveyor 951</Tag>
+  <Tag type="Bool" addr="%Q10.6">Zne09 Conveyor 952</Tag>
+  <Tag type="Bool" addr="%Q10.7">Zne09 Conveyor 953</Tag>
+  <Tag type="Bool" addr="%Q11.0">Zne09 Chain Transfer Right</Tag>
+  <Tag type="Bool" addr="%Q11.1">Zne09 Chain Transfer Left</Tag>
+  <Tag type="Bool" addr="%Q11.2">Zne09 Chain Transfer Foward</Tag>
+  <Tag type="Bool" addr="%Q11.3">Zne09 Chain Transfer Backward</Tag>
+  <Tag type="Bool" addr="%Q11.4">Pick &amp; Place 1 (Grab)</Tag>
+  <Tag type="Bool" addr="%Q11.5">Pick &amp; Place 0 (Grab)</Tag>
+  <Tag type="Bool" addr="%Q12.0">Forks RIght</Tag>
+  <Tag type="Bool" addr="%Q12.1">ForksLeft</Tag>
+  <Tag type="Bool" addr="%Q12.2">Lift</Tag>
+  <Tag type="Int" addr="%IW256">Vision Sensor 0 (Value)</Tag>
+  <Tag type="Int" addr="%IW258">Vision Sensor 2 (Value)</Tag>
+  <Tag type="Int" addr="%IW260">Vision Sensor 1 (Value)</Tag>
+  <Tag type="Int" addr="%IW262">Vision Sensor 3 (Value)</Tag>
+  <Tag type="Int" addr="%IW264">Vision Sensor 4 (Value)</Tag>
+  <Tag type="Int" addr="%IW266">Pick &amp; Place 0 X Position (V)</Tag>
+  <Tag type="Int" addr="%IW268">Pick &amp; Place 0 Y Position (V)</Tag>
+  <Tag type="Int" addr="%IW270">Pick &amp; Place 0 Z Position (V)</Tag>
+  <Tag type="Int" addr="%IW272">Pick &amp; Place 1 X Position (V)</Tag>
+  <Tag type="Int" addr="%IW274">Pick &amp; Place 1 Y Position (V)</Tag>
+  <Tag type="Int" addr="%IW276">Pick &amp; Place 1 Z Position (V)</Tag>
+  <Tag type="Int" addr="%QW256">Pick &amp; Place 0 X Set Point (V)</Tag>
+  <Tag type="Int" addr="%QW258">Pick &amp; Place 0 Y Set Point(V)</Tag>
+  <Tag type="Int" addr="%QW260">Pick &amp; Place 0 Z Set Point (V)</Tag>
+  <Tag type="Int" addr="%QW262">Pick &amp; Place 1 X Set Point (V)</Tag>
+  <Tag type="Int" addr="%QW264">Pick &amp; Place 1 Y Set Point(V)</Tag>
+  <Tag type="Int" addr="%QW266">Pick &amp; Place 1 Z Set Point (V)</Tag>
+  <Tag type="Int" addr="%QW270">Zne09 Stacker Target Position</Tag>
+</Tagtable>

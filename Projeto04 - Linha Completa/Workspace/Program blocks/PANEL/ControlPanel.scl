@@ -1,0 +1,93 @@
+﻿FUNCTION_BLOCK "ControlPanel"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      i_xButtonReset : Bool;
+      i_xButtonStart : Bool;
+      i_xButtonStop : Bool;
+      i_xButtonEmergency : Bool;
+      i_xSelectorMode : Bool;   // 0 = Manual, 1= Auto
+      i_xClock : Bool;
+   END_VAR
+
+   VAR_OUTPUT 
+      q_xStartLight : Bool;
+      q_xStopLight : Bool;
+      q_xResetLight : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR 
+      IEC_Timer_0_Instance {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+   END_VAR
+
+
+BEGIN
+	REGION INPUTS
+	    //EMERGENCY STATUS//
+	    IF #i_xButtonEmergency AND #i_xButtonReset THEN
+	        #ControlPanel.q_xEmergencyStatusZone := TRUE;
+	    ELSIF NOT #i_xButtonEmergency THEN
+	        #ControlPanel.q_xEmergencyStatusZone := FALSE;
+	    END_IF;
+	    
+	    //MANUAL MODE//
+	    IF #ControlPanel.q_xEmergencyStatusZone AND NOT #i_xSelectorMode THEN
+	        #ControlPanel.q_xManualMode := TRUE;
+	    ELSIF NOT #ControlPanel.q_xEmergencyStatusZone OR #i_xSelectorMode THEN
+	        #ControlPanel.q_xManualMode := FALSE;
+	    END_IF;
+	    
+	    //AUTO MODE//
+	    IF #ControlPanel.q_xEmergencyStatusZone AND #i_xSelectorMode AND #ControlPanel.iq_xPanelOn THEN
+	        #ControlPanel.q_xAutoMode := TRUE;
+	    ELSIF NOT #ControlPanel.q_xEmergencyStatusZone OR NOT #i_xSelectorMode OR #ControlPanel.iq_xPanelOff THEN
+	        #ControlPanel.q_xAutoMode := FALSE;
+	    END_IF;
+	    
+	    //RESET COMMAND//
+	    #IEC_Timer_0_Instance(IN:=#i_xButtonReset,
+	                          PT:=t#5s,
+	                          Q=>#ControlPanel.q_xPanelResetCmd);
+	    
+	    //ON-OFF COMMAND//
+	    IF #i_xButtonStart AND #i_xButtonStop THEN
+	        #ControlPanel.iq_xPanelOn := TRUE;
+	        #ControlPanel.iq_xPanelOff := FALSE;
+	    ELSIF NOT #i_xButtonStop OR NOT #ControlPanel.q_xEmergencyStatusZone OR #ControlPanel.q_xManualMode THEN
+	        #ControlPanel.iq_xPanelOn := FALSE;
+	        #ControlPanel.iq_xPanelOff := TRUE;
+	    END_IF;
+	END_REGION
+	
+	REGION STATUS MODE
+	    IF NOT #ControlPanel.q_xEmergencyStatusZone THEN
+	        #ControlPanel.q_siMode := 1; //EMERGENCIA
+	        
+	    ELSIF #ControlPanel.q_xAutoMode THEN
+	        #ControlPanel.q_siMode := 2; //AUTOMATICO
+	        
+	    ELSIF #ControlPanel.q_xManualMode THEN
+	        #ControlPanel.q_siMode := 3; //MANUAL
+	        
+	    ELSE
+	        #ControlPanel.q_siMode := 4; //DESLIGADO
+	    END_IF;
+	END_REGION
+	
+	REGION OUTPUTS
+	    //START LIGHT    
+	    #q_xStartLight := #ControlPanel.q_xAutoMode OR (#i_xSelectorMode AND #ControlPanel.q_xEmergencyStatusZone AND #i_xClock);
+	    //STOP LIGHT 
+	    #q_xStopLight := NOT #i_xButtonEmergency OR (#i_xButtonEmergency AND NOT #ControlPanel.q_xEmergencyStatusZone AND #i_xClock);
+	    //RESET LIGHT 
+	    #q_xResetLight := #ControlPanel.q_xPanelResetCmd;
+	END_REGION
+	
+	
+	
+END_FUNCTION_BLOCK
+

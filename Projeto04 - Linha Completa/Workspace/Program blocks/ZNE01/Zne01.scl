@@ -1,0 +1,236 @@
+﻿FUNCTION_BLOCK "Zne01"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      "Sorter 102" : "Sorter";
+      "Sorter 123" : "Sorter";
+      "Conveyor 101" : "Conveyor";
+      "Conveyor 120" : "Conveyor";
+      "Conveyor 121" : "Conveyor";
+      "Conveyor 122" : "Conveyor";
+      "Conveyor 124" : "Conveyor";
+      "Conveyor 125" : "Conveyor";
+      Aux_xLastPartCenter0 { S7_SetPoint := 'True'} : Bool;
+      Aux_xLastPartCenter2 : Bool;
+      "Machine Center 0" : "MachineCenter";
+      "Machine Center 1" : "MachineCenter";
+      "Conveyor 130" : "Conveyor";
+      "Conveyor 131" : "Conveyor";
+      "Conveyor 132" : "Conveyor";
+      "Sorter 133" : "Sorter";
+      "Conveyor 134" : "Conveyor";
+      "Conveyor 135" : "Conveyor";
+      "Machine Center 2" : "MachineCenter";
+      "Machine Center 3" : "MachineCenter";
+      tInterlockConveyor122 {InstructionName := 'TOF_TIME'; LibVersion := '1.0'} : TOF_TIME;
+      tInterlockConveyor132 {InstructionName := 'TOF_TIME'; LibVersion := '1.0'} : TOF_TIME;
+   END_VAR
+
+
+BEGIN
+	
+	
+	REGION #"Conveyor 101"
+	    #"Conveyor 101".i_xInterlock := (#"Sorter 102".i_xRightRequest AND NOT #"Conveyor 120".q_xMotorOn) OR (#"Sorter 102".i_xLeftRequest AND NOT #"Conveyor 130".q_xMotorOn);
+	    #"Conveyor 101"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 101",
+	                    Conveyor := "General"."Conveyor 101");
+	END_REGION
+	
+	REGION #"Sorter 102"
+	    #"Sorter 102".i_xRightRequest := "Vision Sensor 0 (Value)" = "GreenRawMaterial";
+	    #"Sorter 102".i_xLeftRequest := "Vision Sensor 0 (Value)" = "BlueRawMaterial";
+	    #"Sorter 102".i_xCenterRequest := ("Vision Sensor 0 (Value)" <> "BlueRawMaterial") AND ("Vision Sensor 0 (Value)" <> "GreenRawMaterial") AND ("Vision Sensor 0 (Value)" <> 0);
+	    #"Sorter 102"(ControlPanel := "General".Panel01,
+	                  q_xUp => "Zne01 Sorter 102 (Up)",
+	                  q_xRight => "Zne01 Sorter 102 (Right)",
+	                  q_xLeft => "Zne01 Sorter 102 (Left)");
+	END_REGION
+	
+	REGION #"Conveyor 120"
+	    #"Conveyor 120".i_xInterlock := "Sensor 120" AND NOT #"Conveyor 121".q_xMotorOn;
+	    #"Conveyor 120"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 120",
+	                    Conveyor := "General"."Conveyor 120");
+	END_REGION
+	
+	REGION #"Conveyor 121"    
+	    #"Conveyor 121".i_xInterlock := NOT #"Conveyor 122".q_xMotorOn;
+	    #"Conveyor 121"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 121",
+	                    Conveyor := "General"."Conveyor 121");
+	END_REGION
+	
+	REGION #"Conveyor 122"
+	    #tInterlockConveyor122(IN:="Sensor 122" AND ((NOT #"Conveyor 124".q_xMotorOn AND "Zne01 Sorter 123 (Right)") OR (NOT #"Conveyor 125".q_xMotorOn AND NOT "Zne01 Sorter 123 (Right)")),
+	                           PT:=T#2s);
+	    
+	    #"Conveyor 122".i_xInterlock := #tInterlockConveyor122.Q;
+	    #"Conveyor 122"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 122",
+	                    Conveyor := "General"."Conveyor 122");
+	END_REGION
+	
+	REGION #"Sorter 123"
+	    
+	    //DIRECTION LOGIC
+	    IF NOT "Machining Center 0 (Is Busy)" AND "Machining Center 1 (Is Busy)" THEN
+	        #"Sorter 123".i_xRightRequest := TRUE;
+	        #"Sorter 123".i_xCenterRequest := FALSE;
+	    ELSIF "Machining Center 0 (Is Busy)" AND NOT "Machining Center 1 (Is Busy)" THEN
+	        #"Sorter 123".i_xRightRequest := FALSE;
+	        #"Sorter 123".i_xCenterRequest := TRUE;
+	    ELSIF NOT "Machining Center 0 (Is Busy)" AND NOT "Machining Center 1 (Is Busy)" THEN
+	        IF #Aux_xLastPartCenter0 THEN
+	            #"Sorter 123".i_xRightRequest := FALSE;
+	            #"Sorter 123".i_xCenterRequest := TRUE;
+	        ELSE
+	            #"Sorter 123".i_xRightRequest := TRUE;
+	            #"Sorter 123".i_xCenterRequest := FALSE;
+	        END_IF;
+	    END_IF;
+	    
+	    //LAST PART MEMORY DIRECTION
+	    IF "Machining Center 0 (Is Busy)" THEN
+	        #Aux_xLastPartCenter0 := TRUE;
+	    ELSIF "Machining Center 1 (Is Busy)" THEN
+	        #Aux_xLastPartCenter0 := FALSE;
+	    END_IF;
+	    
+	    #"Sorter 123"(ControlPanel := "General".Panel01,
+	                  q_xUp => "Zne01 Sorter 123 (Up)",
+	                  q_xRight => "Zne01 Sorter 123 (Right)");
+	END_REGION
+	
+	REGION #"Conveyor 124"
+	    #"Conveyor 124".i_xInterlock := "Machining Center 0 (Is Busy)";
+	    #"Conveyor 124"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 124",
+	                    Conveyor := "General"."Conveyor 124");
+	END_REGION
+	
+	REGION #"Conveyor 125"    
+	    #"Conveyor 125".i_xInterlock := "Machining Center 1 (Is Busy)" OR #"Machine Center 1".Interlock;
+	    #"Conveyor 125"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 125",
+	                    Conveyor := "General"."Conveyor 125");
+	END_REGION
+	
+	REGION #"Machine Center 0"    
+	    #"Machine Center 0"(Interlock := FALSE,
+	                        ControlPanel := "General".Panel01,
+	                        Start => "Machining Center 0 (Start)",
+	                        Stop => "Machining Center 0 (Stop)",
+	                        Reset => "Machining Center 0 (Reset)");
+	END_REGION
+	
+	REGION #"Machine Center 1"
+	    #"Machine Center 1"(Interlock := NOT "Zne03 Conveyor 300",
+	                        ControlPanel := "General".Panel01,
+	                        Start => "Machining Center 1 (Start)",
+	                        Stop => "Machining Center 1 (Stop)",
+	                        Reset => "Machining Center 1 (Reset)");
+	END_REGION
+	
+	REGION #"Conveyor 130"
+	    #"Conveyor 130".i_xInterlock := "Sensor 130" AND NOT #"Conveyor 131".q_xMotorOn;
+	    #"Conveyor 130"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 130",
+	                    "Conveyor" := "General"."Conveyor 130");
+	END_REGION
+	
+	REGION #"Conveyor 131"
+	    #"Conveyor 131".i_xInterlock := NOT #"Conveyor 132".q_xMotorOn;
+	    #"Conveyor 131"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 131",
+	                    Conveyor := "General"."Conveyor 131");
+	END_REGION
+	
+	REGION #"Conveyor 132"    
+	    #tInterlockConveyor132(IN := "Sensor 132" AND ((NOT #"Conveyor 134".q_xMotorOn AND "Zne01 Sorter 133 (Left)") OR (NOT #"Conveyor 135".q_xMotorOn AND NOT "Zne01 Sorter 133 (Left)")),
+	                           PT := T#2s);
+	    #"Conveyor 132".i_xInterlock := #tInterlockConveyor132.Q;
+	    #"Conveyor 132"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 132",
+	                    Conveyor := "General"."Conveyor 132");
+	END_REGION
+	
+	REGION #"Sorter 133"
+	    
+	    //DIRECTION LOGIC
+	    IF NOT "Machining Center 2 (Is Busy)" AND "Machining Center 3 (Is Busy)" THEN
+	        #"Sorter 133".i_xCenterRequest := TRUE;
+	        #"Sorter 133".i_xLeftRequest := FALSE;
+	    ELSIF "Machining Center 2 (Is Busy)" AND NOT "Machining Center 3 (Is Busy)" THEN
+	        #"Sorter 133".i_xCenterRequest := FALSE;
+	        #"Sorter 133".i_xLeftRequest := TRUE;
+	    ELSIF NOT "Machining Center 2 (Is Busy)" AND NOT "Machining Center 3 (Is Busy)" THEN
+	        IF #Aux_xLastPartCenter2 THEN
+	            #"Sorter 133".i_xCenterRequest := FALSE;
+	            #"Sorter 133".i_xLeftRequest := TRUE;
+	        ELSE
+	            #"Sorter 133".i_xCenterRequest := TRUE;
+	            #"Sorter 133".i_xLeftRequest := FALSE;
+	        END_IF;
+	    END_IF;
+	    
+	    //LAST PART MEMORY DIRECTION
+	    IF "Machining Center 2 (Is Busy)" THEN
+	        #Aux_xLastPartCenter2 := TRUE;
+	    ELSIF "Machining Center 3 (Is Busy)" THEN
+	        #Aux_xLastPartCenter2 := FALSE;
+	    END_IF;
+	    
+	    #"Sorter 133"(ControlPanel := "General".Panel01,
+	                  q_xUp => "Zne01 Sorter 133 (Up)",
+	                  q_xLeft => "Zne01 Sorter 133 (Left)");
+	END_REGION
+	
+	REGION #"Conveyor 134"
+	    #"Conveyor 134".i_xInterlock := "Machining Center 3 (Is Busy)";
+	    #"Conveyor 134"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 134",
+	                    Conveyor := "General"."Conveyor 134");
+	END_REGION
+	
+	REGION #"Conveyor 135"
+	    #"Conveyor 135".i_xInterlock := "Machining Center 2 (Is Busy)" OR #"Machine Center 2".Interlock;
+	    #"Conveyor 135"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne01 Conveyor 135",
+	                    Conveyor := "General"."Conveyor 135");
+	END_REGION
+	
+	REGION #"Machine Center 2"
+	    #"Machine Center 2"(Interlock := NOT "Zne05 Conveyor 500",
+	                        ControlPanel := "General".Panel01,
+	                        Start => "Machining Center 2 (Start)",
+	                        Stop => "Machining Center 2 (Stop)",
+	                        Reset => "Machining Center 2 (Reset)");
+	END_REGION
+	
+	REGION #"Machine Center 3"
+	    #"Machine Center 3"(Interlock := FALSE,
+	                        ControlPanel := "General".Panel01,
+	                        Start => "Machining Center 3 (Start)",
+	                        Stop => "Machining Center 3 (Stop)",
+	                        Reset => "Machining Center 3 (Reset)");
+	END_REGION
+	
+	
+	
+	
+	
+	
+END_FUNCTION_BLOCK
+

@@ -1,0 +1,75 @@
+﻿FUNCTION_BLOCK "Zne02"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      "Conveyor 220" : "Conveyor";
+      "Conveyor 221" : "Conveyor";
+      "Pusher Zne02" : "Pusher";
+      "Conveyor 222" : "Conveyor";
+      "Conveyor 223" : "Conveyor";
+      "Conveyor 224" : "Conveyor";
+      "Conveyor 225" : "Conveyor";
+   END_VAR
+
+
+BEGIN
+	
+	REGION #"Conveyor 220"
+	    #"Conveyor 220"(i_xRun := TRUE,
+	                    ControlPanel := "General".Panel01,
+	                    q_xMotorOn => "Zne02 Conveyor 220",
+	                    Conveyor := "General"."Conveyor 220");
+	END_REGION
+	
+	REGION #"Conveyor 221"
+	    #"Conveyor 221"(i_xRun:=TRUE,
+	                    ControlPanel:="General".Panel01,
+	                    q_xMotorOn=>"Zne02 Conveyor 221",
+	                    Conveyor:="General"."Conveyor 221");
+	END_REGION
+	
+	REGION #"Pusher Zne02"    
+	    #"Pusher Zne02".RequestPusher := ("Vision Sensor 2 (Value)" <> "GreenLidMaterial") AND ("Vision Sensor 2 (Value)" <> 0);
+	    #"Pusher Zne02"(Timer := T#500ms,
+	                    "ControlPanel" := "General".Panel01,
+	                    Pusher => "Zne02 Pusher");
+	END_REGION
+	
+	REGION #"Conveyor 222"    
+	    #"Conveyor 222"(i_xRun:=TRUE,
+	                    ControlPanel:="General".Panel01,
+	                    Conveyor:="General"."Conveyor 222");
+	    "Zne02 Conveyor 222A" := #"Conveyor 222".q_xMotorOn;
+	    "Zne02 Conveyor 222B" := #"Conveyor 222".q_xMotorOn;
+	END_REGION
+	
+	REGION #"Conveyor 223"
+	    #"Conveyor 223".i_xInterlock := "Sensor 223" AND NOT "General"."Assembler Zne03".ReadyToReceiveLid;
+	    #"Conveyor 223"(i_xRun:=TRUE,
+	                    ControlPanel:="General".Panel01,
+	                    q_xMotorOn=>"Zne02 Conveyor 223",
+	                    Conveyor:="General"."Conveyor 223");
+	END_REGION
+	
+	REGION #"Conveyor 224"
+	    #"Conveyor 224".i_xInterlock := FALSE;
+	    #"Conveyor 224"(i_xRun:=TRUE,
+	                    ControlPanel:="General".Panel01,
+	                    q_xMotorOn=>"Zne02 Conveyor 224",
+	                    Conveyor:="General"."Conveyor 224");
+	END_REGION
+	
+	REGION "Conveyor 225"    
+	    #"Conveyor 225".i_xInterlock := FALSE;
+	#"Conveyor 225"(i_xRun:=TRUE,
+	                ControlPanel:="General".Panel01,
+	                q_xMotorOn=>"Zne02 Conveyor 225",
+	                Conveyor:="General"."Conveyor 225");
+	END_REGION
+	
+	
+	
+	
+	
+END_FUNCTION_BLOCK
+

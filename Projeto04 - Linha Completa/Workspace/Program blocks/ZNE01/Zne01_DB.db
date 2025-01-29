@@ -1,0 +1,10 @@
+﻿DATA_BLOCK "Zne01_DB"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"Zne01"
+
+BEGIN
+
+END_DATA_BLOCK
+

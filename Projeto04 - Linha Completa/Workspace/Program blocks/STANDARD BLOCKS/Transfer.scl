@@ -1,0 +1,138 @@
+﻿FUNCTION_BLOCK "Transfer"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      RightStop : Bool;
+      LeftStop : Bool;
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR_OUTPUT 
+      "Chain Transfer Foward" : Bool;
+      "Chain Transfer Backward" : Bool;
+      "Chain Transfer Right" : Bool;
+      "Chain Transfer Left" : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      Transfer : "St_Transfer";
+   END_VAR
+
+
+BEGIN
+	
+	REGION Reset    
+	    IF #ControlPanel.q_xPanelResetCmd THEN
+	        #Transfer.iMachineState := 0;
+	        #Transfer."Chain Transfer Foward" := 0;
+	        #Transfer."Chain Transfer Backward" := 0;
+	        #Transfer."Chain Transfer Right" := 0;
+	        #Transfer."Chain Transfer Left" := 0;
+	        #Transfer.ReadyToReceiveRight := 0;
+	        #Transfer.ReadyToReceiveLeft := 0;
+	    END_IF;
+	END_REGION
+	
+	
+	REGION Machine State    
+	    IF #ControlPanel.q_xAutoMode THEN
+	        CASE #Transfer.iMachineState OF
+	            0:  // HOME 
+	                #Transfer.iState := 'S00 HOME POSITION';
+	                #Transfer."Chain Transfer Foward" := 0;
+	                #Transfer."Chain Transfer Backward" := 0;
+	                #Transfer."Chain Transfer Right" := 0;
+	                #Transfer."Chain Transfer Left" := 0;
+	                #Transfer.ReadyToReceiveRight := 0;
+	                #Transfer.ReadyToReceiveLeft := 0;
+	                
+	                IF NOT #RightStop AND NOT #LeftStop THEN
+	                    #Transfer.iMachineState := 1;
+	                END_IF;
+	                
+	            1:  // AGUARDA PALET
+	                #Transfer.iState := 'S01 AGUARDA PALET';
+	                
+	                IF #Transfer.RequestRight AND NOT #Transfer.RequestLeft THEN
+	                    #Transfer.iMachineState := 2;
+	                ELSIF NOT #Transfer.RequestRight AND #Transfer.RequestLeft THEN
+	                    #Transfer.iMachineState := 3;
+	                ELSIF #Transfer.RequestRight AND #Transfer.RequestLeft THEN
+	                    IF #Transfer.LastReceiveRightSide THEN
+	                        #Transfer.iMachineState := 3;
+	                    ELSE
+	                        #Transfer.iMachineState := 2;
+	                    END_IF;
+	                END_IF;
+	                
+	            2: // RECEBE PALET PELA DIREITA
+	                #Transfer.iState := 'S02 RECEBE PALET PELA DIREITA';
+	                #Transfer.ReadyToReceiveRight := 1;
+	                #Transfer."Chain Transfer Right" := 1;
+	                IF #RightStop THEN
+	                    #Transfer.iMachineState := 4;
+	                    #Transfer.LastReceiveRightSide := 1;
+	                END_IF;
+	                
+	            3: // RECEBE PALET PELA ESQUERDA
+	                #Transfer.iState := 'S03 RECEBE PALET PELA ESQUERDA';
+	                #Transfer.ReadyToReceiveLeft := 1;
+	                #Transfer."Chain Transfer Left" := 1;
+	                IF #LeftStop THEN
+	                    #Transfer.iMachineState := 4;
+	                    #Transfer.LastReceiveRightSide := 0;
+	                END_IF;
+	                
+	            4: // AGUARDA LIBERACAO PARA ENVIAR
+	                #Transfer.iState := 'S04 AGUARDA LIBERACAO PARA ENVIAR';
+	                #Transfer.ReadyToReceiveLeft := 0;
+	                #Transfer.ReadyToReceiveRight := 0;
+	                #Transfer."Chain Transfer Right" := 0;
+	                #Transfer."Chain Transfer Left" := 0;
+	                IF #Transfer.EnableSend THEN
+	                    #Transfer.iMachineState := 5;
+	                END_IF;
+	                
+	            5: // ENVIAR PALET 
+	                #Transfer.iState := 'S05 AGUARDA LIBERACAO PARA ENVIAR';
+	                #Transfer."Chain Transfer Foward" := 1;
+	                IF NOT #Transfer.EnableSend THEN
+	                    #Transfer.iMachineState := 0;
+	                END_IF;
+	                
+	            ELSE
+	                #Transfer.iMachineState := 0;
+	        END_CASE;
+	    END_IF;
+	END_REGION
+	
+	REGION OUTPUTS
+	    CASE #ControlPanel.q_siMode OF
+	        1:  // EMERGENCIA
+	            #"Chain Transfer Foward" := 0;
+	            #"Chain Transfer Backward" := 0;
+	            #"Chain Transfer Right" := 0;
+	            #"Chain Transfer Left" := 0;
+	            
+	        2:  // AUTOMATICO
+	            #"Chain Transfer Foward" := #Transfer."Chain Transfer Foward";
+	            #"Chain Transfer Backward" := #Transfer."Chain Transfer Backward";
+	            #"Chain Transfer Right" := #Transfer."Chain Transfer Right";
+	            #"Chain Transfer Left" := #Transfer."Chain Transfer Left";
+	            
+	        3:  // MANUAL
+	            #"Chain Transfer Foward" := 0;
+	            #"Chain Transfer Backward" := 0;
+	            #"Chain Transfer Right" := 0;
+	            #"Chain Transfer Left" := 0;
+	            
+	        ELSE
+	            #"Chain Transfer Foward" := 0;
+	            #"Chain Transfer Backward" := 0;
+	            #"Chain Transfer Right" := 0;
+	            #"Chain Transfer Left" := 0;
+	    END_CASE;
+	END_REGION
+	
+END_FUNCTION_BLOCK
+

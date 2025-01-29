@@ -1,0 +1,294 @@
+﻿FUNCTION_BLOCK "Warehouse"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      i_xAtLeft : Bool;
+      i_xAtRight : Bool;
+      i_xAtMiddle : Bool;
+      i_xMovingZ : Bool;
+      i_xMovingX : Bool;
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR_OUTPUT 
+      q_xForksLeft : Bool;
+      q_xForksRight : Bool;
+      q_xLift : Bool;
+   END_VAR
+   VAR_OUTPUT RETAIN
+      q_dTargetPosition : Int;
+   END_VAR
+
+   VAR_IN_OUT 
+      Warehouse : "St_Warehouse";
+   END_VAR
+
+   VAR 
+      t_LiftDown {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      t_LiftUp {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      TargetPositionRetirada { S7_SetPoint := 'True'} : DInt;
+      TargetPositionEntrada : DInt;
+      t_NotMovingX {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+   END_VAR
+
+
+BEGIN
+	
+	IF #ControlPanel.q_xPanelResetCmd THEN
+	    #Warehouse.xForksLeft := 0;
+	    #Warehouse.xForksRight := 0;
+	    #Warehouse.xLift := 0;
+	    #Warehouse.q_dTargetPosition := "HOMEPOSITION";
+	    #Warehouse.iMachineState_Entrada := 0;
+	    #Warehouse.iMachineState_Retirada := 0;
+	    #Warehouse.iPosição := 0;
+	END_IF;
+	
+	
+	IF #Warehouse.iPosição > 54 THEN
+	    #Warehouse.iPosição := 54;
+	END_IF;
+	
+	IF #Warehouse.iPosição < 1 THEN
+	    #Warehouse.iPosição := 1;
+	END_IF;
+	
+	REGION TIMMERS
+	    #t_LiftDown(IN := NOT #q_xLift AND NOT #i_xMovingZ,
+	                PT := T#1s);
+	    
+	    #t_LiftUp(IN:=#q_xLift AND NOT #i_xMovingZ,
+	              PT:=T#1s);
+	    
+	    #t_NotMovingX(IN:= NOT #i_xMovingX,
+	               PT:=T#2s);
+	END_REGION
+	
+	REGION ESTADO RETIRADA
+	    IF #ControlPanel.q_xAutoMode AND #Warehouse.iMachineState_Entrada <= 1 THEN
+	        
+	        CASE #Warehouse.iMachineState_Retirada OF
+	            0:  // AGUARDANDO SOLICITAÇÃO RETIRADA
+	                #Warehouse.iStateRetirada := 'S00 - AGUARDANDO SOLICITACAO RETIRADA';
+	                IF #Warehouse.xPedidoRetirada THEN
+	                    #Warehouse.iMachineState_Retirada := 1;
+	                END_IF;
+	                
+	            1:  // VERIFICA POSICAO VALIDA
+	                #Warehouse.iStateRetirada := 'S01 - VERIFICA POSICAO VALIDA';
+	                IF #Warehouse.Armazem[#Warehouse.iPosição] THEN
+	                    #Warehouse.iMachineState_Retirada := 3;
+	                    #TargetPositionRetirada := #Warehouse.iPosição;
+	                ELSE
+	                    #Warehouse.iMachineState_Retirada := 2;
+	                END_IF;
+	                
+	            2:  // POSICAO INVALIDA
+	                #Warehouse.iStateRetirada := 'S02 - POSICAO INVALIDA PARA RETIRADA';
+	                IF NOT #Warehouse.xPedidoRetirada THEN
+	                    #Warehouse.iMachineState_Retirada := 0;
+	                END_IF;
+	                
+	            3:  // FORK LIVRE
+	                #Warehouse.iStateRetirada := 'S03 - REPOUSO FORKS';
+	                #Warehouse.xLift := 0;
+	                IF #t_LiftDown.Q THEN
+	                    #Warehouse.xForksLeft := 0;
+	                    #Warehouse.xForksRight := 0;
+	                    IF #i_xAtMiddle THEN
+	                        #Warehouse.iMachineState_Retirada := 4;
+	                    END_IF;
+	                END_IF;
+	                
+	            4:  // DESLOCA PARA POSICAO DO ARMAZEM
+	                #Warehouse.iStateRetirada := 'S04 - DESLOCA PARA POSICAO DO ARMAZEM';
+	                #Warehouse.q_dTargetPosition := #TargetPositionRetirada;
+	                IF (#q_dTargetPosition = #Warehouse.q_dTargetPosition) AND #t_NotMovingX.Q THEN
+	                    #Warehouse.iMachineState_Retirada := 5;
+	                END_IF;
+	                
+	            5:  // AVANCA FORK
+	                #Warehouse.iStateRetirada := 'S05 - AVANCA FORK';
+	                #Warehouse.xForksRight := 1;
+	                IF #q_xForksRight AND #i_xAtRight THEN
+	                    #Warehouse.iMachineState_Retirada := 6;
+	                END_IF;
+	                
+	            6:  // LIFT UP
+	                #Warehouse.iStateRetirada := 'S06 - ERGUE LIFT';
+	                #Warehouse.xLift := 1;
+	                IF #q_xLift AND #t_LiftUp.Q THEN
+	                    #Warehouse.Armazem[#TargetPositionRetirada] := 0;
+	                    IF NOT #Warehouse.Armazem[#TargetPositionRetirada] THEN
+	                        #Warehouse.iMachineState_Retirada := 7;
+	                    END_IF;
+	                END_IF;
+	                
+	            7:  // RECUA FORKS
+	                #Warehouse.iStateRetirada := 'S07 - RECUA FORKS';
+	                #Warehouse.xForksRight := 0;
+	                IF NOT #q_xForksRight AND #i_xAtMiddle THEN
+	                    #Warehouse.iMachineState_Retirada := 8;
+	                END_IF;
+	                
+	            8:  // DESLOCA PARA POSICAO DAS ESTEIRA DE SAIDA
+	                #Warehouse.iStateRetirada := 'S08 - DESLOCA PARA POSICAO DAS ESTEIRA DE SAIDA';
+	                #Warehouse.q_dTargetPosition := "HOMEPOSITION";
+	                IF #t_NotMovingX.Q AND (#q_dTargetPosition = "HOMEPOSITION") AND NOT #Warehouse.xSensorSaida THEN
+	                    #Warehouse.iMachineState_Retirada := 9;
+	                END_IF;
+	                
+	            9:  // AVANCA FORK PARA ENVIO ESTEIRA
+	                #Warehouse.iStateRetirada := 'S09 - AVANCA FORK PARA ENVIO ESTEIRA';
+	                #Warehouse.xForksRight := 1;
+	                IF #q_xForksRight AND #i_xAtRight THEN
+	                    #Warehouse.iMachineState_Retirada := 10;
+	                END_IF;
+	                
+	            10: // LIFT DOWN
+	                #Warehouse.iStateRetirada := 'S10 - DEPOSITA PALLET NA ESTEIRA';
+	                #Warehouse.xLift := 0;
+	                IF NOT #q_xLift AND #t_LiftDown.Q THEN
+	                    #Warehouse.iMachineState_Retirada := 11;
+	                END_IF;
+	                
+	            11: // RECUA FORKS
+	                #Warehouse.iStateRetirada := 'S11 - RECUA FORKS';
+	                #Warehouse.xForksRight := 0;
+	                IF NOT #q_xForksRight AND #i_xAtMiddle AND NOT #Warehouse.xPedidoRetirada THEN
+	                    #Warehouse.iMachineState_Retirada := 0;
+	                    #Warehouse.iStateRetirada := 'S00 - AGUARDANDO SOLICITACAO RETIRADA';
+	                END_IF;
+	                
+	            ELSE
+	                #Warehouse.iMachineState_Retirada := 0;
+	        END_CASE;
+	    END_IF;
+	END_REGION
+	
+	REGION ESTADO DEPOSITO 
+	    
+	    IF #ControlPanel.q_xAutoMode AND #Warehouse.iMachineState_Retirada = 0 THEN
+	        
+	        CASE #Warehouse.iMachineState_Entrada OF
+	                
+	            0: //POSICAO LIVRE INDISPONIVEL
+	                #Warehouse.iStateEntrada := 'S00 - POSICAO LIVRE INDISPONIVEL';
+	                #TargetPositionEntrada := "PosDisponivel"(#Warehouse.Armazem);
+	                IF #TargetPositionEntrada <> -1 THEN
+	                    #Warehouse.iMachineState_Entrada := 1;
+	                END_IF;
+	                
+	            1:  // AGUARDANDO CHEGADA PALLET
+	                #Warehouse.iStateEntrada := 'S01 - AGUARDANDO CHEGADA PALLET';
+	                IF #Warehouse.xSensorEntrada AND NOT #Warehouse.xPedidoRetirada THEN
+	                    #Warehouse.iMachineState_Entrada := 2;
+	                END_IF;
+	                
+	            2:   // VERIFICA POSICAO DISPONIVEL
+	                #Warehouse.iStateEntrada := 'S02 - VERIFICA POSICAO DISPONIVEL';
+	                #TargetPositionEntrada := "PosDisponivel"(#Warehouse.Armazem);
+	                IF #TargetPositionEntrada = -1 THEN
+	                    #Warehouse.iMachineState_Entrada := 0;
+	                ELSE
+	                    #Warehouse.iMachineState_Entrada := 3;
+	                END_IF;
+	                
+	            3: // FORKS LIVRE
+	                #Warehouse.iStateEntrada := 'S03 - REPOUSO FORKS';
+	                #Warehouse.xLift := 0;
+	                IF #t_LiftDown.Q THEN
+	                    #Warehouse.xForksLeft := 0;
+	                    #Warehouse.xForksRight := 0;
+	                    IF #i_xAtMiddle THEN
+	                        #Warehouse.iMachineState_Entrada := 4;
+	                    END_IF;
+	                END_IF;
+	                
+	            4: // DESLOCA PARA POSICAO DA ESTEIRA DE ENTRADA
+	                #Warehouse.iStateEntrada := 'S04 - DESLOCA PARA POSICAO DA ESTEIRA DE ENTRADA';
+	                #Warehouse.q_dTargetPosition := "HOMEPOSITION";
+	                IF #q_dTargetPosition = "HOMEPOSITION" AND #t_NotMovingX.Q THEN
+	                    #Warehouse.iMachineState_Entrada := 5;
+	                END_IF;
+	                
+	            5: // AVANÇA FORKS
+	                #Warehouse.iStateEntrada := 'S05 - AVANCA FORKS';
+	                #Warehouse.xForksLeft := 1;
+	                IF #q_xForksLeft AND #i_xAtLeft THEN
+	                    #Warehouse.iMachineState_Entrada := 6;
+	                END_IF;
+	                
+	            6:  // RETIRAR PALLET
+	                #Warehouse.iStateEntrada := 'S06 - RETIRAR PALLET';
+	                #Warehouse.xLift := 1;
+	                IF #q_xLift AND #t_LiftUp.Q AND NOT #Warehouse.xSensorEntrada THEN
+	                    #Warehouse.iMachineState_Entrada := 7;
+	                END_IF;
+	                
+	            7: // RECUA FORKS
+	                #Warehouse.iStateEntrada := 'S07 - RECUA FORKS';
+	                #Warehouse.xForksLeft := 0;
+	                IF NOT #Warehouse.xForksLeft AND #i_xAtMiddle THEN
+	                    #Warehouse.iMachineState_Entrada := 8;
+	                END_IF;
+	                
+	            8: // DESLOCA PARA POSICAO DE DEPOSITO NO ARMAZEM
+	                #Warehouse.iStateEntrada := 'S08 - DESLOCA PARA POSICAO DE DEPOSITO NO ARMAZEM';
+	                #Warehouse.q_dTargetPosition := #TargetPositionEntrada;
+	                IF #q_dTargetPosition = #TargetPositionEntrada AND #t_NotMovingX.Q THEN
+	                    #Warehouse.iMachineState_Entrada := 9;
+	                END_IF;
+	                
+	            9: // AVANÇA FORKS NO ARMAZEM
+	                #Warehouse.iStateEntrada := 'S09 - AVANCA FORKS NO ARMAZEM';
+	                #Warehouse.xForksRight := 1;
+	                IF #q_xForksRight AND #i_xAtRight THEN
+	                    #Warehouse.iMachineState_Entrada := 10;
+	                END_IF;
+	                
+	            10: // DEPOSITA PALLET
+	                #Warehouse.iStateEntrada := 'S10 - DEPOSITA PALLET';
+	                #Warehouse.xLift := 0;
+	                IF NOT #q_xLift AND #t_LiftDown.Q THEN
+	                    #Warehouse.Armazem[#q_dTargetPosition] := 1;
+	                    #Warehouse.iMachineState_Entrada := 11;
+	                END_IF;
+	                
+	            11: // RECUA FORKS
+	                #Warehouse.iStateEntrada := 'S11 - RECUA FORKS APOS DEPOSITO';
+	                #Warehouse.xForksRight := 0;
+	                IF NOT #q_xForksRight AND #i_xAtMiddle THEN
+	                    #Warehouse.iMachineState_Entrada := 0;
+	                END_IF;
+	                
+	            ELSE  
+	                #Warehouse.iMachineState_Entrada := 0;
+	        END_CASE;
+	    END_IF;
+	END_REGION
+	
+	
+	
+	
+	REGION OUTPUTS
+	    IF #ControlPanel.q_xAutoMode THEN
+	        
+	        IF #t_NotMovingX.Q THEN 
+	            #q_xForksLeft := #Warehouse.xForksLeft;
+	            #q_xForksRight := #Warehouse.xForksRight;
+	            #q_xLift := #Warehouse.xLift;
+	        END_IF;
+	        
+	        IF #i_xAtMiddle AND NOT #q_xForksLeft AND NOT #q_xForksRight THEN 
+	            #q_dTargetPosition := #Warehouse.q_dTargetPosition;
+	        END_IF;
+	        
+	    END_IF;
+	END_REGION
+	
+	
+	
+	
+END_FUNCTION_BLOCK
+

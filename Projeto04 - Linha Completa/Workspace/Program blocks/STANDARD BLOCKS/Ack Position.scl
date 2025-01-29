@@ -1,0 +1,35 @@
+﻿FUNCTION "Ack Position" : Bool
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      "Actual Position X" : Int;
+      "Actual Position Y" : Int;
+      "Actual Position Z" : Int;
+      Position : Struct
+         x : Int;
+         y : Int;
+         z : Int;
+      END_STRUCT;
+   END_VAR
+
+   VAR_TEMP 
+      "Null" : Bool;
+   END_VAR
+
+   VAR CONSTANT 
+      Tolerance : Int := 30;
+   END_VAR
+
+
+BEGIN
+	
+	#Null := #"Actual Position X" = 0 OR #"Actual Position Y" = 0 OR #"Actual Position Z" = 0;
+	
+	#"Ack Position" := NOT #Null
+	
+	AND #"Actual Position X" >= #Position.x - #Tolerance AND #"Actual Position X" <= #Position.x + #Tolerance
+	AND #"Actual Position Y" >= #Position.y - #Tolerance AND #"Actual Position Y" <= #Position.y + #Tolerance
+	AND #"Actual Position Z" >= #Position.z - #Tolerance AND #"Actual Position Z" <= #Position.z + #Tolerance;
+	
+END_FUNCTION
+

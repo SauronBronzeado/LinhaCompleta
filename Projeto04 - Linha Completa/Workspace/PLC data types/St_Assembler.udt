@@ -1,0 +1,22 @@
+﻿TYPE "St_Assembler"
+VERSION : 0.1
+   STRUCT
+      LidClampUpPosition : Bool;
+      LidClampDownPosition : Bool;
+      BaseClampUpPosition : Bool;
+      BaseClampDownPosition : Bool;
+      AxisXFoward : Bool;
+      AxisXBackward : Bool;
+      AxisZRise : Bool;
+      AxisZDown : Bool;
+      iMachineState { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Int;
+      iState : String;
+      MemoryPresenceLid : Bool;
+      MemoryPresenceBase : Bool;
+      ReadyToReceiveLid : Bool;
+      ReadyToReceiveBase : Bool;
+      EnableSend : Bool;
+   END_STRUCT;
+
+END_TYPE
+

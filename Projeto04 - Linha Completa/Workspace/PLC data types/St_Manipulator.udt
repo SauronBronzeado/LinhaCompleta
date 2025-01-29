@@ -1,0 +1,19 @@
+﻿TYPE "St_Manipulator"
+VERSION : 0.1
+   STRUCT
+      ReadyToReceivePallet : Bool;
+      PalletFull : Bool;
+      ContActual : Int;
+      ContMax : Int;
+      iMachineState { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Int;
+      iState : String;
+      Coordinates : Array[0.."MaxCoordinates"] of Struct
+         "Axis X" { S7_SetPoint := 'True'} : Int;
+         "Axis Y" { S7_SetPoint := 'True'} : Int;
+         "Axis Z" { S7_SetPoint := 'True'} : Int;
+      END_STRUCT;
+      Ack_Positions : Array[0.."MaxCoordinates"] of Bool;
+   END_STRUCT;
+
+END_TYPE
+

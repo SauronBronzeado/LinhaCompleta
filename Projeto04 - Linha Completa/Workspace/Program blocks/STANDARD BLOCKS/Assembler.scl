@@ -1,0 +1,219 @@
+﻿FUNCTION_BLOCK "Assembler"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      LidClampClosed : Bool;
+      LidClampLimit : Bool;
+      BaseClampClosed : Bool;
+      BaseClampLimit : Bool;
+      PresenceLidConveyor : Bool;
+      PresenceBaseConveyor : Bool;
+      PresenceGrab : Bool;
+      MovingX : Bool;
+      MovingZ : Bool;
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR_OUTPUT 
+      LidClampClose : Bool;
+      LidClampRise : Bool;
+      BaseClampClose : Bool;
+      BaseClampRise : Bool;
+      AxisX : Bool;
+      AxisZ : Bool;
+      Grab : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      "St_ Assembler" : "St_Assembler";
+   END_VAR
+
+   VAR 
+      iMachineState { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Int;
+      LidPresence {InstructionName := 'F_TRIG'; LibVersion := '1.0'} : F_TRIG;
+      BasePresence {InstructionName := 'F_TRIG'; LibVersion := '1.0'} : F_TRIG;
+      tVacuoOff {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tSaidaPeça {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tLidClampUp {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tLidClampDown {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tBaseClampUp {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tBaseClampDown {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tXFoward {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tXBackward {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tZRise {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      tZDown {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+   END_VAR
+
+
+BEGIN
+	REGION Memory Presence
+	    #LidPresence(CLK := #PresenceLidConveyor); // PULSE LID PRESENCE
+	    IF #LidPresence.Q THEN
+	        #"St_ Assembler".MemoryPresenceLid := 1;
+	    END_IF;
+	    
+	    #BasePresence(CLK := #PresenceBaseConveyor); // PULSE BASE PRESENCE
+	    IF #BasePresence.Q THEN
+	        #"St_ Assembler".MemoryPresenceBase := 1;
+	    END_IF;
+	END_REGION
+	
+	REGION HOME MACHINE
+	    IF #ControlPanel.q_xPanelResetCmd THEN
+	        #LidClampClose := 0;
+	        #LidClampRise := 0;
+	        #BaseClampClose := 0;
+	        #BaseClampRise := 0;
+	        #AxisX := 1;
+	        #AxisZ := 0;
+	        #Grab := 0;
+	        #"St_ Assembler".iMachineState := 0;
+	        #"St_ Assembler".MemoryPresenceLid := 0;
+	        #"St_ Assembler".MemoryPresenceBase := 0;
+	    END_IF;
+	END_REGION
+	
+	REGION Timmers
+	    #tVacuoOff(IN := NOT #Grab,
+	               PT := T#1s);
+	    
+	    #tSaidaPeça(IN:=#BaseClampRise,
+	                PT:=T#3s);
+	    
+	    #tLidClampUp(IN:=#LidClampRise AND #LidClampLimit ,
+	                 PT:=T#500ms,
+	                 Q=>#"St_ Assembler".LidClampUpPosition);
+	    
+	    #tLidClampDown(IN:=NOT #LidClampRise AND #LidClampLimit,
+	                   PT:=T#500ms,
+	                   Q=>#"St_ Assembler".LidClampDownPosition);
+	    
+	    #tBaseClampUp(IN:=#BaseClampRise AND #BaseClampLimit,
+	                  PT:=T#500ms,
+	                  Q=>#"St_ Assembler".BaseClampUpPosition);
+	    
+	    #tBaseClampDown(IN:=NOT #BaseClampRise AND #BaseClampLimit,
+	                    PT:=T#500ms,
+	                    Q=>#"St_ Assembler".BaseClampDownPosition);
+	    
+	    #tXFoward(IN:=#AxisX AND NOT #MovingX ,
+	              PT:=T#1s,
+	              Q=>#"St_ Assembler".AxisXFoward);
+	    
+	    #tXBackward(IN:= NOT #AxisX AND NOT #MovingX,
+	                PT:=T#1s,
+	                Q=>#"St_ Assembler".AxisXBackward);
+	    
+	    #tZRise(IN:=NOT #AxisZ AND NOT #MovingZ,
+	            PT:=T#1s,
+	            Q=>#"St_ Assembler".AxisZRise);
+	    
+	    #tZDown(IN:=#AxisZ AND NOT #MovingZ,
+	            PT:=T#1s,
+	            Q=>#"St_ Assembler".AxisZDown);
+	END_REGION
+	
+	// READY TO RECEIVE SIGNAL
+	#"St_ Assembler".ReadyToReceiveLid := #ControlPanel.q_xAutoMode AND #"St_ Assembler".iMachineState = 1 AND NOT #"St_ Assembler".MemoryPresenceLid;
+	#"St_ Assembler".ReadyToReceiveBase := #ControlPanel.q_xAutoMode AND #"St_ Assembler".iMachineState = 1 AND NOT #"St_ Assembler".MemoryPresenceBase;
+	IF #ControlPanel.q_xAutoMode THEN
+	    CASE #"St_ Assembler".iMachineState OF
+	        0:  // HOME MACHINE
+	            #"St_ Assembler".iState := 'S00 PASSO INICIAL';
+	            #LidClampClose := FALSE;
+	            #LidClampRise := FALSE;
+	            #BaseClampClose := FALSE;
+	            #BaseClampRise := FALSE;
+	            #AxisX := TRUE;
+	            #AxisZ := FALSE;
+	            #Grab := FALSE;
+	            
+	            IF NOT #LidClampClosed AND #"St_ Assembler".LidClampDownPosition AND NOT #BaseClampClosed AND #"St_ Assembler".BaseClampDownPosition AND #"St_ Assembler".AxisXFoward AND #"St_ Assembler".AxisZRise THEN
+	                #"St_ Assembler".iMachineState := 1;
+	            END_IF;
+	            ;
+	        1:  // AGUARDANDO LID E BASE PRESENÇA
+	            #"St_ Assembler".iState := 'S01 AGUARDANDO LID E BASE PRESENCA';
+	            IF #"St_ Assembler".MemoryPresenceLid THEN
+	                #LidClampClose := 1;
+	            END_IF;
+	            IF #"St_ Assembler".MemoryPresenceBase THEN
+	                #BaseClampClose := 1;
+	            END_IF;
+	            IF #LidClampClosed AND #BaseClampClosed AND #"St_ Assembler".MemoryPresenceBase AND #"St_ Assembler".MemoryPresenceLid THEN
+	                #"St_ Assembler".iMachineState := 2;
+	            END_IF;
+	            
+	        2: // PICK POSITION
+	            #"St_ Assembler".iState := 'S02 PICK POSITION';
+	            #AxisX := 1;
+	            IF #"St_ Assembler".AxisXFoward THEN
+	                #AxisZ := 1;
+	            END_IF;
+	            IF #"St_ Assembler".AxisXFoward AND #"St_ Assembler".AxisZDown THEN
+	                #"St_ Assembler".iMachineState := 3;
+	            END_IF;
+	            
+	        3: // ACIONA VACUO
+	            #"St_ Assembler".iState := 'S03 ACIONA VACUO';
+	            #Grab := 1;
+	            IF #Grab AND #PresenceGrab THEN
+	                #"St_ Assembler".iMachineState := 4;
+	            END_IF;
+	            
+	        4: // RETIRA LID 
+	            #"St_ Assembler".iState := 'S04 RETIRA LID';
+	            #LidClampClose := 0;
+	            #AxisZ := 0;
+	            IF NOT #LidClampClosed AND #"St_ Assembler".AxisZRise AND #PresenceGrab THEN
+	                #"St_ Assembler".MemoryPresenceLid := 0;
+	                #"St_ Assembler".iMachineState := 5;
+	            END_IF;
+	            
+	        5: // RECUA EIXO X
+	            #"St_ Assembler".iState := 'S05 RECUA EIXO X';
+	            #AxisX := 0;
+	            IF #"St_ Assembler".AxisXBackward THEN
+	                #"St_ Assembler".iMachineState := 6;
+	            END_IF;
+	            
+	        6: // DESCE PARA MONTAGEM
+	            #"St_ Assembler".iState := 'S06 DESCE PARA MONTAGEM';
+	            #AxisZ := 1;
+	            IF #"St_ Assembler".AxisZDown THEN
+	                #"St_ Assembler".iMachineState := 7;
+	            END_IF;
+	            
+	        7: // LIBERA VACUO
+	            #"St_ Assembler".iState := 'S07 LIBERA VACUO';
+	            #Grab := 0;
+	            IF #tVacuoOff.Q THEN
+	                #"St_ Assembler".iMachineState := 8;
+	            END_IF;
+	            
+	        8: // SOBE SEM PEÇA
+	            #"St_ Assembler".iState := 'S08 SOBE SEM PECA';
+	            #AxisZ := 0;
+	            #BaseClampClose := 0;
+	            IF NOT #BaseClampClosed AND #"St_ Assembler".AxisZRise AND NOT #PresenceGrab AND #"St_ Assembler".EnableSend THEN
+	                #"St_ Assembler".iMachineState := 9;
+	            END_IF;
+	            
+	        9: // LIBERA PEÇA COMPLETA
+	            #"St_ Assembler".iState := 'S09 LIBERA PECA COMPLETA';
+	            #AxisX := 1;
+	            #BaseClampRise := 1;
+	            IF #"St_ Assembler".AxisXFoward AND #tSaidaPeça.Q THEN
+	                #"St_ Assembler".MemoryPresenceBase := 0;
+	                #"St_ Assembler".iMachineState := 0;
+	            END_IF;
+	        ELSE  
+	            #"St_ Assembler".iMachineState := 0; 
+	    END_CASE;
+	END_IF;
+	
+	
+	
+	
+END_FUNCTION_BLOCK
+

@@ -1,0 +1,10 @@
+﻿DATA_BLOCK "ControlPanel_DB"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+NON_RETAIN
+"ControlPanel"
+
+BEGIN
+
+END_DATA_BLOCK
+

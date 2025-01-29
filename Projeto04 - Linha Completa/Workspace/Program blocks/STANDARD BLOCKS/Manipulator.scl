@@ -1,0 +1,197 @@
+﻿FUNCTION_BLOCK "Manipulator"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      "Pallet Detected" : Bool;
+      "Part Detected" : Bool;
+      PresenceGrab : Bool;
+      "Actual Position X" : Int;
+      "Actual Position Y" : Int;
+      "Actual Position Z" : Int;
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR_OUTPUT 
+      "X Setpoint" : Int;
+      "Y Setpoint" : Int;
+      "Z Setpoint" : Int;
+      Grab : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      Manipulator : "St_Manipulator";
+   END_VAR
+
+   VAR 
+      Position : Struct
+         x : Int;
+         y : Int;
+         z : Int;
+      END_STRUCT;
+      "Null Position" : Bool;
+      i : Int;
+      GrabOff {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      NotPallet {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+   END_VAR
+
+   VAR CONSTANT 
+      Tolerance : Int := 30;
+      Offset : Int := -2000;
+   END_VAR
+
+
+BEGIN
+	
+	REGION "General" Reset
+	    IF #ControlPanel.q_xPanelResetCmd THEN
+	        #Position := #Manipulator.Coordinates[0]; //Home
+	        #Grab := 0;
+	        #Manipulator.ReadyToReceivePallet := 0;
+	        #Manipulator.PalletFull := 0;
+	        #Manipulator.ContActual := 0;
+	        #Manipulator.iMachineState := 0;
+	    END_IF;
+	
+	END_REGION
+	
+	REGION Timers
+	    #GrabOff(IN:=NOT #Grab, PT:=T#1s);
+	    #NotPallet(IN:=NOT #"Pallet Detected", PT:=T#2s);
+	END_REGION
+	
+	REGION Acknowledged Position      
+	    // "General".Manipulator.Coordinates[5]."Axis Z" := 27648 - (#Manipulator.ContActual * 2000);
+	    FOR #i := 0 TO "MaxCoordinates" DO
+	        #Manipulator.Ack_Positions[#i] := "Ack Position"("Actual Position X" := #"Actual Position X",
+	                                                         "Actual Position Y" := #"Actual Position Y",
+	                                                         "Actual Position Z" := #"Actual Position Z",
+	                                                         Position := #Manipulator.Coordinates[#i]);
+	    END_FOR;
+	END_REGION
+	
+	REGION Machine State
+	    IF #ControlPanel.q_xAutoMode THEN
+	        
+	        CASE #Manipulator.iMachineState OF
+	            0:  // RESET CONTADOR
+	                #Manipulator.iState := 'S00 PASSO INICIAL';
+	                #Manipulator.ContActual := 0;
+	                #Manipulator.ReadyToReceivePallet := 0;
+	                #Manipulator.PalletFull := 0;
+	                IF #Manipulator.ContActual = 0 THEN
+	                    #Manipulator.iMachineState := 1;
+	                END_IF;
+	                
+	            1: // HOME MACHINE 
+	                #Manipulator.iState := 'S01 POSICAO INICIAL';
+	                    #Position := #Manipulator.Coordinates[0];
+	                    #Grab := 0;
+	                    IF #Manipulator.Ack_Positions[0] AND NOT #PresenceGrab THEN
+	                    #Manipulator.iMachineState := 2;
+	                END_IF;
+	                
+	            2: // AGUARDANDO PALET E PEÇA
+	                #Manipulator.iState := 'S02 AGUARDANDO PALET E PEÇA';
+	                #Manipulator.ReadyToReceivePallet := 1;
+	                
+	                IF #"Pallet Detected" THEN
+	                    #Manipulator.ReadyToReceivePallet := 0;    
+	                END_IF;
+	                
+	                IF #"Pallet Detected" AND #"Part Detected" THEN
+	                    #Manipulator.iMachineState := 3;
+	                    #Manipulator.ReadyToReceivePallet := 0;
+	                END_IF;
+	                
+	            3: // PREPICK POSITION
+	                #Manipulator.iState := 'S03 PREPICK POSITION';
+	                #Position := #Manipulator.Coordinates[1];
+	                IF #Manipulator.Ack_Positions[1] THEN
+	                    #Manipulator.iMachineState := 4;
+	                END_IF;
+	                
+	            4: // PICK POSITION
+	                #Manipulator.iState := 'S04 PICK POSITION';
+	                #Position := #Manipulator.Coordinates[2];
+	                IF #Manipulator.Ack_Positions[2] THEN
+	                    #Manipulator.iMachineState := 5;
+	                END_IF;
+	                
+	            5: // LIGAR VACUO 
+	                #Manipulator.iState := 'S05 LIGAR VACUO';
+	                #Grab := 1;
+	                IF #Grab AND #PresenceGrab THEN
+	                    #Manipulator.iMachineState := 6;
+	                END_IF;
+	                    
+	            6: // POSPICK POSITION
+	                #Manipulator.iState := 'S06 POSPICK POSITION';
+	                #Position := #Manipulator.Coordinates[3];
+	                IF #Manipulator.Ack_Positions[3] AND #PresenceGrab THEN
+	                    #Manipulator.iMachineState := 7;
+	                END_IF;
+	                
+	            7: //PREDROP POSITION
+	                #Manipulator.iState := 'S07 PREDROP POSITION';
+	                #Position := #Manipulator.Coordinates[4];
+	                IF #Manipulator.Ack_Positions[4] AND #"Pallet Detected" THEN
+	                    #Manipulator.iMachineState := 8;
+	                END_IF;
+	                
+	            8: //DROP POSITION
+	                #Manipulator.iState := 'S08 DROP POSITION';
+	                #Position := #Manipulator.Coordinates[5];
+	                IF #Manipulator.Ack_Positions[5] THEN
+	                    #Manipulator.iMachineState := 9;
+	                END_IF;
+	                
+	            9: // LIBERA VACUO
+	                #Manipulator.iState := 'S09 LIBERA VACUO';
+	                #Grab := 0;
+	                IF #GrabOff.Q THEN
+	                    #Manipulator.iMachineState := 10;
+	                END_IF;
+	                
+	            10: // POS DROP
+	                #Manipulator.iState := 'S10 POS DROP';
+	                #Position := #Manipulator.Coordinates[6];
+	                IF #Manipulator.Ack_Positions[6] AND NOT #PresenceGrab THEN
+	                    #Manipulator.ContActual := #Manipulator.ContActual + 1;
+	                    #Manipulator.iMachineState := 11;
+	                END_IF;
+	                
+	            11: // VERIFICA CONTADOR
+	                #Manipulator.iState := 'S11 VERIFICA CONTADOR';
+	                IF #Manipulator.ContActual >= #Manipulator.ContMax THEN
+	                    
+	                    #Manipulator.iMachineState := 12;
+	                ELSE
+	                    #Manipulator.iMachineState := 1;
+	                END_IF;
+	                
+	            12: //PALET CHEIO
+	                #Manipulator.iState := 'S12 PALET CHEIO';
+	                #Manipulator.PalletFull := 1;
+	                IF #NotPallet.Q THEN
+	                    #Manipulator.iMachineState := 0;
+	                END_IF;
+	            ELSE  
+	                #Manipulator.iMachineState := 0;
+	        END_CASE;
+	    END_IF;
+	END_REGION
+	
+	REGION OFFSET FROP
+	    
+	    
+	END_REGION
+	
+	
+	REGION OUTPUTS
+	    #"X Setpoint" := #Position.x;
+	    #"Y Setpoint" := #Position.y;
+	    #"Z Setpoint" := #Position.z;
+	END_REGION
+	
+END_FUNCTION_BLOCK
+

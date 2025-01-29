@@ -1,0 +1,8 @@
+﻿TYPE "St_Sorter"
+VERSION : 0.1
+   STRUCT
+      temp : Bool;
+   END_STRUCT;
+
+END_TYPE
+

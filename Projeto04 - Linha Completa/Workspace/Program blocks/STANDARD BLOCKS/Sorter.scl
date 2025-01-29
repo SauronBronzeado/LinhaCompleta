@@ -1,0 +1,51 @@
+﻿FUNCTION_BLOCK "Sorter"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      i_xRightRequest : Bool;
+      i_xLeftRequest : Bool;
+      i_xCenterRequest : Bool;
+      ControlPanel : "St_ControlPanel";
+   END_VAR
+
+   VAR_OUTPUT 
+      q_xUp : Bool;
+      q_xRight : Bool;
+      q_xLeft : Bool;
+   END_VAR
+
+
+BEGIN
+	
+	REGION MODO
+	    CASE #ControlPanel.q_siMode OF
+	        1:  // EMERGENCIA
+	            #q_xUp := FALSE;
+	            
+	        2:  // AUTOMATICO
+	            #q_xUp := TRUE;
+	            
+	            IF #i_xRightRequest THEN
+	                #q_xRight := TRUE;
+	                #q_xLeft := FALSE;
+	            END_IF;
+	            
+	            IF #i_xLeftRequest THEN
+	                #q_xRight := FALSE;
+	                #q_xLeft := TRUE;
+	            END_IF;
+	            
+	            IF #i_xCenterRequest THEN
+	                #q_xRight := FALSE;
+	                #q_xLeft := FALSE;
+	            END_IF;
+	            
+	        3:  // MANUAL
+	            #q_xUp := FALSE;
+	            
+	        ELSE
+	            #q_xUp := FALSE;
+	    END_CASE;
+	END_REGION
+END_FUNCTION_BLOCK
+
